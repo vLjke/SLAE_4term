@@ -1,3 +1,0 @@
-/home/vljke/Documents/Clion projects/SLAE_4term/cmake-build-debug/CMakeFiles/SLAE_4term.dir
-/home/vljke/Documents/Clion projects/SLAE_4term/cmake-build-debug/CMakeFiles/edit_cache.dir
-/home/vljke/Documents/Clion projects/SLAE_4term/cmake-build-debug/CMakeFiles/rebuild_cache.dir
