@@ -5,7 +5,7 @@
 int main() {
     Tridiag_matrix_solver solver {};
     std::vector<double> d {1, 2, 3, 4, 5};
-    Tridiagonal_matrix m {5, {3, 4, 1, 11}, {6, 8, 9, 11, 13}, {3, 3, 4, 5}};
+    Tridiagonal_matrix m {5, {3, 4, 1, 11}, {6, 8, 9, 10, 13}, {3, 3, 4, 5}};
     std::cout << m << std::endl;
     for (auto v: d)
         std::cout << v << " ";
