@@ -1,3 +1,18 @@
 # ninja log v5
-0	486	1675712497294705011	CMakeFiles/SLAE_4term.dir/main.cpp.o	c038e5fa623a7da2
-487	584	1675712497390711404	SLAE_4term	94e1ca2b9d50cee0
+376	452	1675871154414764268	SLAE_4term	3ae6c43aec9de3aa
+1	409	1675867925559389057	CMakeFiles/SLAE_4term.dir/Tridiagonal_matrix_solver/Tridiag_matrix_solver.cpp.o	569e729e52b1de55
+0	25	1675872530302258092	build.ninja	fe06d60be050b0d5
+1	402	1675863886457813410	CMakeFiles/SLAE_4term.dir/Tridiagonal_matrix/Tridiagonal_matrix.cpp.o	eb5ee3fddface04f
+1	375	1675871154338761441	CMakeFiles/SLAE_4term.dir/main.cpp.o	c038e5fa623a7da2
+1	405	1675872749553520292	CMakeFiles/SLAE_4term.dir/Tridiagonal_matrix_solver/Tridiag_matrix_solver.cpp.o	569e729e52b1de55
+1	412	1675872749561520193	CMakeFiles/SLAE_4term.dir/Tridiagonal_matrix/Tridiagonal_matrix.cpp.o	eb5ee3fddface04f
+0	415	1675872749565520144	CMakeFiles/SLAE_4term.dir/main.cpp.o	c038e5fa623a7da2
+415	486	1675872749633519302	SLAE_4term	3ae6c43aec9de3aa
+1	376	1675872780425166434	CMakeFiles/SLAE_4term.dir/Tridiagonal_matrix_solver/Tridiag_matrix_solver.cpp.o	569e729e52b1de55
+376	450	1675872780497165672	SLAE_4term	3ae6c43aec9de3aa
+1	397	1675872921540131600	CMakeFiles/SLAE_4term.dir/Tridiagonal_matrix_solver/Tridiag_matrix_solver.cpp.o	569e729e52b1de55
+398	476	1675872921620131230	SLAE_4term	3ae6c43aec9de3aa
+1	449	1675873527516275333	CMakeFiles/SLAE_4term.dir/Tridiagonal_matrix_solver/Tridiag_matrix_solver.cpp.o	569e729e52b1de55
+449	516	1675873527584272578	SLAE_4term	3ae6c43aec9de3aa
+1	379	1675873726725358855	CMakeFiles/SLAE_4term.dir/main.cpp.o	c038e5fa623a7da2
+379	457	1675873726801356603	SLAE_4term	3ae6c43aec9de3aa
