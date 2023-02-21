@@ -1,5 +1,5 @@
 include_directories(${gtest_SOURCE_DIR}/include ${gtest_SOURCE_DIR})
-add_subdirectory(Googletest)
+add_subdirectory(googletest)
 
 add_executable(tridiag_test tridiag_test.cpp) # здесь название исполняемого файла и файл в котором лежит тест
 add_test(NAME tridiag_test COMMAND tridiag_test.cpp)
