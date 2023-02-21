@@ -1,12 +1,8 @@
 #include <iostream>
 #include <cmath>
-#include "Tridiagonal_matrix/Tridiagonal_matrix.hpp"
-#include "Tridiagonal_matrix_solver/Tridiag_matrix_solver.hpp"
-#include "googletest/googlemock/include/gmock/gmock.h"
-#include "googletest/googletest/include/gtest/gtest.h"
+#include "gtest/gtest.h"
+#include "..//src/Tridiagonal_matrix/Tridiagonal_matrix.hpp"
 
-// Solver for tests
-Tridiag_matrix_solver<double> solver {};
 
 // For the first test
 Tridiagonal_matrix<double> m1 {5, {2, 3, 1, 4}, {6, 8, 9, 10, 13}, {3, 3, 4, 5}};
@@ -25,29 +21,23 @@ std::vector<double> correctSolution3 {0.0013932624, 0.0020426968, -0.0093871732,
 
 
 // 5x5 matrix
-TEST(Tridiag_matrix_solver_tests, Subtest_1) {
+TEST(Tridiag_matrix_tests, Solution_1) {
     for (int i = 0; i < d1.size(); ++i) {
-        ASSERT_NEAR(correctSolution1[i], solver.Solution(m1, d1)[i], pow(10, -4))
+        ASSERT_NEAR(correctSolution1[i], m1.Solution(d1)[i], pow(10, -4))
         << "!!! TEST FAILED ON COORDINATE NUMBER " << i << " !!!" << std::endl;
     }
 }
 // 4x4 matrix
-TEST(Tridiag_matrix_solver_tests, Subtest_2) {
+TEST(Tridiag_matrix_tests, Solution_2) {
     for (int i = 0; i < d2.size(); ++i) {
-        ASSERT_NEAR(correctSolution2[i], solver.Solution(m2, d2)[i], pow(10, -4))
+        ASSERT_NEAR(correctSolution2[i], m2.Solution(d2)[i], pow(10, -4))
         << "!!! TEST FAILED ON COORDINATE NUMBER " << i << " !!!" << std::endl;
     }
 }
 // 10x10 matrix
-TEST(Tridiag_matrix_solver_tests, Subtest_3) {
+TEST(Tridiag_matrix_tests, Solution_3) {
     for (int i = 0; i < d3.size(); ++i) {
-        ASSERT_NEAR(correctSolution3[i], solver.Solution(m3, d3)[i], pow(10, -10))
+        ASSERT_NEAR(correctSolution3[i], m3.Solution(d3)[i], pow(10, -10))
         << "!!! TEST FAILED ON COORDINATE NUMBER " << i << " !!!" << std::endl;
     }
-}
-
-
-int main(int argc, char **argv) {
-    ::testing::InitGoogleTest(&argc, argv);
-    return RUN_ALL_TESTS();
 }
