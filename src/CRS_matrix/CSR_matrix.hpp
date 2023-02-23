@@ -64,19 +64,34 @@ CSR_matrix_space::CSR_matrix<T>::CSR_matrix(size_t M, size_t N, const std::vecto
 
 // Operators
 template<typename T>
-T CSR_matrix_space::CSR_matrix<T>::getElem(size_t i, size_t j) const {
+const T& CSR_matrix_space::CSR_matrix<T>::getElem(size_t i, size_t j) const {
+    // Lambda to find correct index j
     auto coincideIndex = [j](size_t k){return k == j;};
+    // Finding needed index in correct range
     if (auto it = std::ranges::find_if(this->cols | std::ranges::views::drop(this->rows[i])
-                            | std::ranges::views::take(this->rows[i + 1] - this->rows[i]),
-                            coincideIndex); it)
+            | std::ranges::views::take(this->rows[i + 1] - this->rows[i]), coincideIndex); it)
         return this->values[*it];
     else
         return static_cast<T>(0);
 }
 
 template<typename T>
-std::vector<T> CSR_matrix_space::CSR_matrix<T>::operator*(const std::vector<T>& vec) {
+T& CSR_matrix_space::CSR_matrix<T>::getElem(size_t i, size_t j) {
+    // Lambda to find correct index j
+    auto coincideIndex = [j](size_t k){return k == j;};
+    // Finding needed index in correct range
+    if (auto it = std::ranges::find_if(this->cols | std::ranges::views::drop(this->rows[i])
+            | std::ranges::views::take(this->rows[i + 1] - this->rows[i]), coincideIndex); it)
+        return this->values[*it];
+    else
+        return static_cast<T>(0);
+}
+
+template<typename T>
+std::vector<T> CSR_matrix_space::CSR_matrix<T>::operator*(const std::vector<T>& vec) const {
+    // Result vector
     std::vector<T> result(this->M, 0);
+    // Multiply algorithm
     for (int k = 0; k < M; ++k) {
         if (this->rows[k + 1] - this->rows[k] > 0) {
             for (int s = this->rows[k]; s < this->rows[k + 1]; ++s)

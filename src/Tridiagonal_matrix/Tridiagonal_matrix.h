@@ -22,9 +22,8 @@ public:
     T getElem(size_t i, size_t j) const;
     const Triplet& operator[](size_t i) const;
     Triplet& operator[](size_t i);
-    template<typename A>
-    friend std::ostream& operator<<(std::ostream& os, const Tridiagonal_matrix<A>& m);
-    // Method to get matrix order
+    template<typename Q>
+    friend std::ostream& operator<<(std::ostream& os, const Tridiagonal_matrix<Q>& m);
     size_t getOrder() const;
     // Method to solve SLAE
     std::vector<T> Solution(const std::vector<T>& d) const;

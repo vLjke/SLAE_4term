@@ -1,7 +1,8 @@
 #include <iostream>
 #include <cmath>
+#include "../../src/Vector_operations/Vector_operations.h"
 #include "gtest/gtest.h"
-#include "..//src/CRS_matrix/CSR_matrix.hpp"
+#include "../../src/CRS_matrix/CSR_matrix.hpp"
 
 using namespace DOK_cell_space;
 using namespace CSR_matrix_space;
@@ -19,7 +20,7 @@ TEST(CSR_matrix_tests, DOK_cell_sort) {
     }
 }
 
-TEST(CSR_matrix_tests, CSR_matrix_mult_vector) {
+TEST(CSR_matrix_tests, matrix_mult_vector) {
     auto res = m1 * r1;
     for (int i = 0; i < r1.size(); ++i) {
         std::cout <<"Initial coordinate: " << r1[i] << "; Result coordinate: " << res[i] << std::endl;

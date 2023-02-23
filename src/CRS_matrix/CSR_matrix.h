@@ -33,8 +33,9 @@ namespace CSR_matrix_space
         CSR_matrix() = default;
         CSR_matrix(size_t M, size_t N, const std::vector<DOK_cell_space::cell<T>>& vec);
         // Operators
-        T getElem(size_t i, size_t j) const;
-        std::vector<T> operator*(const std::vector<T>& vec);
+        const T& getElem(size_t i, size_t j) const;
+        T& getElem(size_t i, size_t j);
+        std::vector<T> operator*(const std::vector<T>& vec) const;
         std::pair<size_t, size_t> getOrder() const;
         // Destructor
         ~CSR_matrix() = default;

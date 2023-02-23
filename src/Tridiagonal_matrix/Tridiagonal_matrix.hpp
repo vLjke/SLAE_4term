@@ -22,7 +22,7 @@ Tridiagonal_matrix<T>::Tridiagonal_matrix(int N, const std::vector<T>& a, const 
     this->data[N - 1].b = b[N - 1];
 }
 
-// Operators for matrix
+// Operators
 template<typename T>
 T  Tridiagonal_matrix<T>::getElem(size_t i, size_t j) const{
     if (i - j == 0)
