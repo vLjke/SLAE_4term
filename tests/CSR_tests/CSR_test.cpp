@@ -1,8 +1,8 @@
 #include <iostream>
 #include <cmath>
-#include "../../src/Vector_operations/Vector_operations.h"
+#include "../../src/Vector_operations.h"
 #include "gtest/gtest.h"
-#include "../../src/CRS_matrix/CSR_matrix.hpp"
+#include "../../src/CSR_matrix.h"
 
 using namespace DOK_cell_space;
 using namespace CSR_matrix_space;

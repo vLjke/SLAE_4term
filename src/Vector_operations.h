@@ -5,18 +5,6 @@
 #include<vector>
 
 template<typename T>
-std::vector<T>& operator+(std::vector<T>& right) {
-    return right;
-}
-
-template<typename T>
-std::vector<T>& operator-(std::vector<T>& right) {
-    for (auto& v: right)
-        v = -v;
-    return right;
-}
-
-template<typename T>
 std::vector<T> operator+(const std::vector<T>& left, const std::vector<T>& right) {
     std::vector<T> res(left.size());
     for (int i = 0; i < left.size(); ++i)
@@ -33,35 +21,23 @@ std::vector<T> operator-(const std::vector<T>& left, const std::vector<T>& right
 }
 
 template<typename T>
-std::vector<T>& operator*(T& left, std::vector<T>& right) {
-    for (auto& v: right)
-        v *= left;
-    return right;
+std::vector<T> operator*(T left, const std::vector<T>& right) {
+    std::vector<T> res(right.size());
+    for (int i = 0; i < right.size(); ++i)
+        res[i] = right[i] * left;
+    return res;
 }
 
 template<typename T>
-std::vector<T>& operator*(std::vector<T>& left, T& right) {
-    for (auto& v: left)
-        v *= right;
-    return left;
+std::vector<T> operator*(const std::vector<T>& left, T right) {
+    std::vector<T> res(left.size());
+    for (int i = 0; i < left.size(); ++i)
+        res[i] = left[i] * right;
+    return res;
 }
 
 template<typename T>
-std::vector<T>& operator*(T&& left, std::vector<T>& right) {
-    for (auto& v: right)
-        v *= left;
-    return right;
-}
-
-template<typename T>
-std::vector<T>& operator*(std::vector<T>& left, T&& right) {
-    for (auto& v: left)
-        v *= right;
-    return left;
-}
-
-template<typename T>
-T operator*(std::vector<T>& left, std::vector<T>& right) {
+T operator*(const std::vector<T>& left, const std::vector<T>& right) {
     T res = 0;
     for (int i = 0; i < left.size(); ++i)
         res += left[i] * right[i];

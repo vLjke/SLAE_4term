@@ -3,7 +3,7 @@
 #include <cmath>
 #include <string>
 #include "gtest/gtest.h"
-#include "../../src/Dense_matrix/Dense_matrix.hpp"
+#include "../../src/Dense_matrix.h"
 
 // matrix 100x100 multiply test
 TEST(Dense_matrix_tests, matrix_mult_vector_1) {
@@ -149,7 +149,7 @@ TEST(Dense_matrix_tests, matrix_get_elem) {
                 ssj >> s;
                 i_j_val[j] = std::stod(s);
             }
-            ASSERT_NEAR(i_j_val[2], m.getElem(i_j_val[0], i_j_val[1]), pow(10, -10))
+            ASSERT_NEAR(i_j_val[2], m(i_j_val[0], i_j_val[1]), pow(10, -10))
             << "!!! TEST FAILED ON COORDINATE NUMBER " << i << " !!!" << std::endl;
         }
     }

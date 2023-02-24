@@ -1,7 +1,7 @@
 #include <iostream>
 #include <cmath>
 #include "gtest/gtest.h"
-#include "../../src/Tridiagonal_matrix/Tridiagonal_matrix.hpp"
+#include "../../src/Tridiagonal_matrix.h"
 
 
 // For the first test

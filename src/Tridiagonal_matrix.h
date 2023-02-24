@@ -1,8 +1,36 @@
-#ifndef SLAE_4TERM_TRIDIAGONAL_MATRIX_HPP
-#define SLAE_4TERM_TRIDIAGONAL_MATRIX_HPP
+#ifndef SLAE_4TERM_TRIDIAGONAL_MATRIX_H
+#define SLAE_4TERM_TRIDIAGONAL_MATRIX_H
 
-#include "Tridiagonal_matrix.h"
+#include <iostream>
+#include <vector>
 
+template<typename T>
+class Tridiagonal_matrix {
+private:
+    struct Triplet {
+        T a = 0;
+        T b = 0;
+        T c = 0;
+    };
+    std::vector<Triplet> data;
+public:
+    // Constructors
+    Tridiagonal_matrix() = default;
+    Tridiagonal_matrix(int N, const std::vector<T>& a, const std::vector<T>& b, const std::vector<T>& c);
+    // Operators
+    T operator()(size_t i, size_t j) const;
+    const Triplet& operator[](size_t i) const;
+    Triplet& operator[](size_t i);
+    template<typename Q>
+    friend std::ostream& operator<<(std::ostream& os, const Tridiagonal_matrix<Q>& m);
+    size_t getOrder() const;
+    // Method to solve SLAE
+    std::vector<T> Solution(const std::vector<T>& d) const;
+    // Destructor
+    ~Tridiagonal_matrix() = default;
+};
+
+// ================ Function implementation ================
 // Constructors
 template<typename T>
 Tridiagonal_matrix<T>::Tridiagonal_matrix(int N, const std::vector<T>& a, const std::vector<T>& b, const std::vector<T>& c) {
@@ -22,9 +50,9 @@ Tridiagonal_matrix<T>::Tridiagonal_matrix(int N, const std::vector<T>& a, const 
     this->data[N - 1].b = b[N - 1];
 }
 
-// Operators
+// Tridiagonal matrix operators
 template<typename T>
-T  Tridiagonal_matrix<T>::getElem(size_t i, size_t j) const{
+T  Tridiagonal_matrix<T>::operator()(size_t i, size_t j) const{
     if (i - j == 0)
         return this->data[i].b;
     else if (i - j == 1)
@@ -78,7 +106,7 @@ size_t Tridiagonal_matrix<T>::getOrder() const {
     return this->data.size();
 }
 
-// Tridiag Solver
+// Tridiagonal matrix Solver
 template<typename T>
 std::vector<T> Tridiagonal_matrix<T>::Solution(const std::vector<T> &d) const {
     std::vector<T> p(this->getOrder());
@@ -93,12 +121,12 @@ std::vector<T> Tridiagonal_matrix<T>::Solution(const std::vector<T> &d) const {
     }
     // Setting value of X_n
     q[this->getOrder() - 1] = (d[this->getOrder() - 1] - this->data[this->getOrder() - 1].a * q[this->getOrder() - 2]) /
-                               (this->data[this->getOrder() - 1].a * p[this->getOrder() - 2] + this->data[this->getOrder() - 1].b);
+                              (this->data[this->getOrder() - 1].a * p[this->getOrder() - 2] + this->data[this->getOrder() - 1].b);
     // Second stage: finding X
     for (int i = this->getOrder() - 2; i >= 0; --i)
         q[i] += p[i] * q[i + 1];
     return q;
 }
 
-#endif //SLAE_4TERM_TRIDIAGONAL_MATRIX_HPP
 
+#endif //SLAE_4TERM_TRIDIAGONAL_MATRIX_H
