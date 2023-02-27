@@ -20,21 +20,21 @@ std::vector<double> correctSolution3 {0.0013932624, 0.0020426968, -0.0093871732,
                                       0.0343466480, -0.2262741953, 0.7798162331, -0.6309969124};
 
 
-// 5x5 matrix
+// Tridiagonal matrix 5x5
 TEST(Tridiag_matrix_tests, Solution_1) {
     for (int i = 0; i < d1.size(); ++i) {
         ASSERT_NEAR(correctSolution1[i], m1.Solution(d1)[i], pow(10, -4))
         << "!!! TEST FAILED ON COORDINATE NUMBER " << i << " !!!" << std::endl;
     }
 }
-// 4x4 matrix
+// Tridiagonal matrix 4x4
 TEST(Tridiag_matrix_tests, Solution_2) {
     for (int i = 0; i < d2.size(); ++i) {
         ASSERT_NEAR(correctSolution2[i], m2.Solution(d2)[i], pow(10, -4))
         << "!!! TEST FAILED ON COORDINATE NUMBER " << i << " !!!" << std::endl;
     }
 }
-// 10x10 matrix
+// Tridiaaonal matrix 10x10
 TEST(Tridiag_matrix_tests, Solution_3) {
     for (int i = 0; i < d3.size(); ++i) {
         ASSERT_NEAR(correctSolution3[i], m3.Solution(d3)[i], pow(10, -10))

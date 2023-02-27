@@ -1,7 +1,7 @@
 import numpy as np
 from random import randint
 
-# matrix multiply vector test 1
+# dense matrix multiply vector test 1
 # 100x100 random matrix
 m1 = np.random.random((100, 100)) * 3
 # 100x1 random vector
@@ -28,7 +28,7 @@ with open('Dense_matrix_mult_vector_1.txt', 'w') as f:
     f.write('\n')
 f.close()
 
-# matrix multiply vector test 2
+# dense matrix multiply vector test 2
 # 30x50 random matrix
 m2 = np.random.random((30, 50)) * 5
 # 50x1 random vector
@@ -55,12 +55,12 @@ with open('Dense_matrix_mult_vector_2.txt', 'w') as f:
     f.write('\n')
 f.close()
 
-# matrix get element test
+# dense matrix get N elements test
 # 10x10 random matrix
 m3 = np.random.random((10, 10)) * 2
 # number of elements to get
 N = 10
-with open('Dense_matrix_get_elem.txt', 'w') as f:
+with open('Dense_matrix_get_elems.txt', 'w') as f:
     # write matrix dimensions in the first line
     f.write(str(np.shape(m3)[0]) + ' ' + str(np.shape(m3)[1]) + '\n')
     # write matrix in the next lines
@@ -71,7 +71,7 @@ with open('Dense_matrix_get_elem.txt', 'w') as f:
     # write number of elements to get
     f.write(str(N) + '\n')
     # write indexes and value of elements' to get
-    for k in range(N):
+    for _ in range(N):
         i, j = randint(0, 9), randint(0, 9)
         f.write(str(i) + ' ' + str(j) + ' ' + str(m3[i][j]) + '\n')
 f.close()

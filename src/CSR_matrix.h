@@ -58,15 +58,8 @@ CSR_matrix_space::CSR_matrix<T>::CSR_matrix(size_t M, size_t N, const std::vecto
     // Setting matrix dimensions
     this->M = M;
     this->N = N;
-    // Checking whether input data is correct and sorting it
-    auto correctIndex = [this](const DOK_cell_space::cell<T>& c)
-    { return c.i < this->getOrder().first && c.j < this->getOrder().second; };
-    auto notZeroValue = [](const DOK_cell_space::cell<T>& c)
-    { return c.value != 0; };
-    auto t = vec
-             | std::ranges::views::filter(correctIndex)
-             | std::ranges::views::filter(notZeroValue);
-    std::vector<DOK_cell_space::cell<T>> d(t.begin(), t.end());
+    // Sorting input data
+    std::vector<DOK_cell_space::cell<T>> d = vec;
     std::sort(d.begin(), d.end());
     // Filling in values and cols
     this->values.resize(d.size());
@@ -81,8 +74,8 @@ CSR_matrix_space::CSR_matrix<T>::CSR_matrix(size_t M, size_t N, const std::vecto
         int temp = 0;
         for (int i = 0; i < d[d.size() - 1].i + 1; ++i) {
             if (d[temp].i == i)
-                temp += std::ranges::count_if(d | std::ranges::views::drop(rows[i]),
-                                              [i](const DOK_cell_space::cell<T> &c) { return c.i == i; });
+                temp += std::count_if(d.begin() + rows[i], d.end(),
+                                      [i](const DOK_cell_space::cell<T> &c) { return c.i == i; });
             this->rows[i + 1] = temp;
         }
         // Last lines with only zeros if there are some
@@ -97,10 +90,10 @@ const T& CSR_matrix_space::CSR_matrix<T>::operator()(size_t i, size_t j) const {
     // Lambda to find correct index j
     auto coincideIndex = [j](size_t k){return k == j;};
     // Finding needed index in correct range
-    auto r = this->cols | std::ranges::views::drop(this->rows[i])
-                        | std::ranges::views::take(this->rows[i + 1] - this->rows[i]);
-    if (auto it = std::ranges::find_if(r, coincideIndex); it != r.end())
-        return this->values[*it];
+    if (auto it = std::find_if(std::next(this->cols.begin(), this->rows[i]),
+                               std::next(this->cols.begin(), this->rows[i + 1]), coincideIndex);
+                                it != std::next(this->cols.begin(), this->rows[i + 1]))
+        return this->values[std::distance(this->cols.begin(), it)];
     else
         return static_cast<T>(0);
 }
@@ -110,10 +103,10 @@ T CSR_matrix_space::CSR_matrix<T>::operator()(size_t i, size_t j) {
     // Lambda to find correct index j
     auto coincideIndex = [j](size_t k){return k == j;};
     // Finding needed index in correct range
-    auto r = this->cols | std::ranges::views::drop(this->rows[i])
-             | std::ranges::views::take(this->rows[i + 1] - this->rows[i]);
-    if (auto it = std::ranges::find_if(r, coincideIndex); it != r.end())
-        return this->values[*it];
+    if (auto it = std::find_if(std::next(this->cols.begin(), this->rows[i]),
+                               std::next(this->cols.begin(), this->rows[i + 1]), coincideIndex);
+            it != std::next(this->cols.begin(), this->rows[i + 1]))
+        return this->values[std::distance(this->cols.begin(), it)];
     else
         return static_cast<T>(0);
 }
