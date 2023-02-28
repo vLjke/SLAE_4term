@@ -47,7 +47,7 @@ TEST(CSR_matrix_tests, DOK_cell_sort) {
     file.close();
 }
 
-// CSR matrix 20x20 multiply test
+// CSR matrix 20x20 multiply vector test
 TEST(CSR_matrix_tests, matrix_mult_vector_1) {
     std::string filename("/home/vljke/Documents/Clion projects/SLAE_4term/tests/CSR_tests/CSR_matrix_mult_vector_1.txt");
     std::string temp, s;
@@ -108,7 +108,7 @@ TEST(CSR_matrix_tests, matrix_mult_vector_1) {
     file.close();
 }
 
-// CSR matrix 100x200 multiply test
+// CSR matrix 100x200 multiply vector test
 TEST(CSR_matrix_tests, matrix_mult_vector_2) {
     std::string filename("/home/vljke/Documents/Clion projects/SLAE_4term/tests/CSR_tests/CSR_matrix_mult_vector_2.txt");
     std::string temp, s;

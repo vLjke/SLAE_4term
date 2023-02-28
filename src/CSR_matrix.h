@@ -127,4 +127,5 @@ std::pair<size_t, size_t> CSR_matrix_space::CSR_matrix<T>::getOrder() const {
     return std::make_pair(this->M, this->N);
 }
 
+
 #endif //SLAE_4TERM_CSR_MATRIX_H

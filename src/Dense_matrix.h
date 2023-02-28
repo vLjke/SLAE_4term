@@ -10,7 +10,7 @@
 
 template<typename T>
 class Dense_matrix{
-protected:
+private:
     size_t M{}, N{};
     std::vector<T> data;
 public:
@@ -40,12 +40,14 @@ template<typename T>
 Dense_matrix<T>::Dense_matrix(const std::vector<T>& n) {
     this->M = n.size();
     this->N = n.size();
-    for (int i = 0; i < this->M; ++i) {
-        std::vector<T> e(this->M);
-        e[i] = 1;
-        e = e - 2 * n * n[i] / (n * n);
-        for (int j = 0; j < this->M; ++j)
-            this->data[j * this->M + i] = e[j];
+    this->data.resize(this->M * this->N);
+    std::vector<T> e(this->M);
+    for (int j = 0; j < this->N; ++j) {
+        std::fill(e.begin(), e.end(), 0);
+        e[j] = 1;
+        e = e - 2.0 * n * (n[j] / (n * n));
+        for (int i = 0; i < this->M; ++i)
+            this->data[i * this->N + j] = e[i];
     }
 }
 // Dense matrix operators
@@ -108,7 +110,7 @@ std::pair<Dense_matrix<T>, Dense_matrix<T>> Dense_matrix<T>::QR_decomp_HH() cons
     R(0, 0) -= 2 * n[0] * (x * n) / (n * n);
     for (int i = 1; i < R.getOrder().first; ++i)
         R(i, 0) = 0;
-    // Changing other columns after first one
+    // Changing other columns after the first one
     for (int j = 1; j < R.getOrder().second; ++j) {
         std::vector<T> x1(dimension);
         for (int i = 0; i < x1.size(); ++i)
@@ -117,7 +119,10 @@ std::pair<Dense_matrix<T>, Dense_matrix<T>> Dense_matrix<T>::QR_decomp_HH() cons
             R(i, j) -= 2 * n[i] * (x1 * n) / (n * n);
     }
     // Cycle through all columns
-    for (int k = 1; k < this->getOrder().second; ++k) {
+    // Number of iterations
+    size_t amount;
+    R.getOrder().first == R.getOrder().second ? amount = R.getOrder().second - 1: amount = R.getOrder().second;
+    for (int k = 1; k < amount; ++k) {
         // Decreasing dimension of projection
         dimension--;
         x.resize(dimension);
@@ -144,17 +149,14 @@ std::pair<Dense_matrix<T>, Dense_matrix<T>> Dense_matrix<T>::QR_decomp_HH() cons
         // Step k, finding Q_k
         for (int i = 0; i < Q.getOrder().first; ++i) {
             for (int j = 0; j < dimension; ++j)
-                x[j] = R(i, k + j);
+                x[j] = Q(i, j + k);
             for (int j = 0; j < dimension; ++j)
-                Q(i, j + k) -= 2 * n[i] * (x * n) / (n * n);
+                Q(i, j + k) -= 2 * n[j] * (x * n) / (n * n);
         }
     }
-    // Transposing Q
-    for (int i = 0; i < Q.getOrder().first; ++i)
-        for (int j = i + 1; j < Q.getOrder().second; ++j)
-            std::swap(Q(i, j), Q(j, i));
     return std::make_pair(Q, R);
 }
+
 
 #endif //SLAE_4TERM_DENSE_MATRIX_H
 
