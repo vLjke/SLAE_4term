@@ -6,6 +6,7 @@
 #include <ranges>
 #include <algorithm>
 #include <utility>
+#include "Vector_operations.h"
 
 namespace DOK_cell_space
 {
@@ -37,6 +38,13 @@ namespace CSR_matrix_space
         T operator()(size_t i, size_t j);
         std::vector<T> operator*(const std::vector<T>& vec) const;
         std::pair<size_t, size_t> getOrder() const;
+        // Solvers
+        // Jacobi
+        std::pair<std::vector<T>, std::pair<size_t, std::vector<double>>>  Jacobi_solver(const std::vector<T>& x_0, const std::vector<T>& b, double accuracy);
+        // Gauss-Seidel
+        std::pair<std::vector<T>, std::pair<size_t, std::vector<double>>>  Gauss_Seidel_solver(const std::vector<T>& x_0, const std::vector<T>& b, double accuracy);
+        // Fixed-point iteration
+        std::pair<std::vector<T>, std::pair<size_t, std::vector<double>>> Fixed_point_iteration_solver(double tau, const std::vector<T>& x_0, const std::vector<T>& b, double accuracy);
         // Destructor
         ~CSR_matrix() = default;
     };
@@ -92,7 +100,7 @@ const T& CSR_matrix_space::CSR_matrix<T>::operator()(size_t i, size_t j) const {
     // Finding needed index in correct range
     if (auto it = std::find_if(std::next(this->cols.begin(), this->rows[i]),
                                std::next(this->cols.begin(), this->rows[i + 1]), coincideIndex);
-                                it != std::next(this->cols.begin(), this->rows[i + 1]))
+            it != std::next(this->cols.begin(), this->rows[i + 1]))
         return this->values[std::distance(this->cols.begin(), it)];
     else
         return static_cast<T>(0);
@@ -116,7 +124,7 @@ std::vector<T> CSR_matrix_space::CSR_matrix<T>::operator*(const std::vector<T>& 
     // Result vector
     std::vector<T> result(this->M);
     // Multiply algorithm
-    for (int k = 0; k < M; ++k)
+    for (int k = 0; k < this->M; ++k)
         for (int s = this->rows[k]; s < this->rows[k + 1]; ++s)
             result[k] += vec[this->cols[s]] * this->values[s];
     return result;
@@ -127,5 +135,73 @@ std::pair<size_t, size_t> CSR_matrix_space::CSR_matrix<T>::getOrder() const {
     return std::make_pair(this->M, this->N);
 }
 
-
+// CSR matrix solvers
+// Jacobi method
+template<typename T>
+std::pair<std::vector<T>, std::pair<size_t, std::vector<double>>>
+        CSR_matrix_space::CSR_matrix<T>::Jacobi_solver(const std::vector<T>& x_0, const std::vector<T>& b, double accuracy) {
+    std::vector<T> x0 = x_0;
+    std::vector<T> r = *this * x0 - b;
+    std::vector<T> x(x_0.size());
+    size_t count = 0;
+    std::vector<double> nev {sqrt(r * r)};
+    while (nev[count] > accuracy) {
+        for (int k = 0; k < x.size(); ++k) {
+            x[k] = b[k];
+            for (int s = this->rows[k]; s < this->rows[k + 1]; ++s) {
+                if (this->cols[s] == k) continue;
+                x[k] -= x0[this->cols[s]] * this->values[s];
+            }
+            x[k] /= (*this)(k, k);
+        }
+        x0 = x;
+        r = *this * x0 - b;
+        nev.push_back(sqrt(r * r));
+        count++;
+    }
+    return std::make_pair(x, std::make_pair(count, nev));
+}
+// Gauss-Seidel method
+template<typename T>
+std::pair<std::vector<T>, std::pair<size_t, std::vector<double>>>
+        CSR_matrix_space::CSR_matrix<T>::Gauss_Seidel_solver(const std::vector<T> &x_0, const std::vector<T> &b, double accuracy) {
+    std::vector<T> x = x_0;
+    std::vector<T> r = *this * x - b;
+    size_t count = 0;
+    std::vector<double> nev {sqrt(r * r)};
+    while (nev[count] > accuracy) {
+        for (int k = 0; k < x.size(); ++k) {
+            x[k] = b[k];
+            for (int s = this->rows[k]; s < this->rows[k + 1]; ++s) {
+                if (this->cols[s] == k) continue;
+                x[k] -= x[this->cols[s]] * this->values[s];
+            }
+            x[k] /= (*this)(k, k);
+        }
+        r = *this * x - b;
+        nev.push_back(sqrt(r * r));
+        count++;
+    }
+    return std::make_pair(x, std::make_pair(count, nev));
+}
+//Fixed point iteration method
+template<typename T>
+std::pair<std::vector<T>, std::pair<size_t, std::vector<double>>>
+        CSR_matrix_space::CSR_matrix<T>::Fixed_point_iteration_solver(double tau,const std::vector<T>& x_0,
+                                                                      const std::vector<T>& b,
+                                                                      double accuracy) {
+    std::vector<T> x0 = x_0;
+    std::vector<T> r = (*this) * x0 - b;
+    std::vector<T> x(x0.size());
+    size_t count = 0;
+    std::vector<double> nev {sqrt(r * r)};
+    while (nev[count] > accuracy) {
+        x = x0 + tau * (b - *this * x0);
+        x0 = x;
+        r = *this * x0 - b;
+        nev.push_back(sqrt(r * r));
+        count++;
+    }
+    return std::make_pair(x, std::make_pair(count, nev));
+}
 #endif //SLAE_4TERM_CSR_MATRIX_H
