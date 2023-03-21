@@ -18,7 +18,7 @@ TEST(Tasks, Task_3) {
     out.open("/home/vljke/Documents/Clion projects/SLAE_4term/tests/Tasks/Task3/data.txt");
     if (out.is_open())
         while (tau < 0.1) {
-            auto res = m.Fixed_point_iteration_solver(tau, x0, b, accuracy);
+            auto res = m.Simple_iteration_method(x0, b, tau, accuracy);
             out << res.second.first << " " << tau;
             out << std::endl;
             tau += pow(10, -4);
@@ -37,7 +37,7 @@ TEST(Tasks, Task_4) {
     out1.open("/home/vljke/Documents/Clion projects/SLAE_4term/tests/Tasks/Task4/data_Fixed_point.txt");
     if (out1.is_open()) {
         double tau = 0.0001;
-        auto res = m.Fixed_point_iteration_solver(tau, x0, b, accuracy);
+        auto res = m.Simple_iteration_method(x0, b, tau, accuracy);
         for (int i = 0; i < res.second.second.size(); ++i) {
             out1 << i << " " << res.second.second[i];
             out1 << std::endl;
@@ -48,7 +48,7 @@ TEST(Tasks, Task_4) {
     std::ofstream out2;
     out2.open("/home/vljke/Documents/Clion projects/SLAE_4term/tests/Tasks/Task4/data_Jacobi.txt");
     if (out2.is_open()) {
-        auto res = m.Jacobi_solver(x0, b, accuracy);
+        auto res = m.Jacobi_method(x0, b, accuracy);
         for (int i = 0; i < res.second.second.size(); ++i) {
             out2 << i << " " << res.second.second[i];
             out2 << std::endl;
@@ -59,7 +59,7 @@ TEST(Tasks, Task_4) {
     std::ofstream out3;
     out3.open("/home/vljke/Documents/Clion projects/SLAE_4term/tests/Tasks/Task4/data_Gauss_Seidel.txt");
     if (out3.is_open()) {
-        auto res = m.Gauss_Seidel_solver(x0, b, accuracy);
+        auto res = m.Gauss_Seidel_method(x0, b, accuracy);
         for (int i = 0; i < res.second.second.size(); ++i) {
             out3 << i << " " << res.second.second[i];
             out3 << std::endl;

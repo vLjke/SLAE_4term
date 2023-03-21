@@ -38,13 +38,19 @@ namespace CSR_matrix_space
         T operator()(size_t i, size_t j);
         std::vector<T> operator*(const std::vector<T>& vec) const;
         std::pair<size_t, size_t> getOrder() const;
-        // Solvers
-        // Jacobi
-        std::pair<std::vector<T>, std::pair<size_t, std::vector<double>>>  Jacobi_solver(const std::vector<T>& x_0, const std::vector<T>& b, double accuracy);
-        // Gauss-Seidel
-        std::pair<std::vector<T>, std::pair<size_t, std::vector<double>>>  Gauss_Seidel_solver(const std::vector<T>& x_0, const std::vector<T>& b, double accuracy);
-        // Fixed-point iteration
-        std::pair<std::vector<T>, std::pair<size_t, std::vector<double>>> Fixed_point_iteration_solver(double tau, const std::vector<T>& x_0, const std::vector<T>& b, double accuracy);
+        // SLAE Solvers
+        // Jacobi method
+        std::pair<std::vector<T>, std::pair<size_t, std::vector<double>>> Jacobi_method
+        (const std::vector<T>& x_0, const std::vector<T>& b, double accuracy);
+        // Gauss-Seidel method
+        std::pair<std::vector<T>, std::pair<size_t, std::vector<double>>> Gauss_Seidel_method
+        (const std::vector<T>& x_0, const std::vector<T>& b, double accuracy);
+        // Simple-iteration method
+        std::pair<std::vector<T>, std::pair<size_t, std::vector<double>>> Simple_iteration_method
+        (const std::vector<T>& x_0, const std::vector<T>& b, double tau, double accuracy);
+        // SIM w/ Chebyshev acceleration
+        std::pair<std::vector<T>, std::pair<size_t, std::vector<double>>> SIM_Chebyshev_acceleration
+        (const std::vector<T>& x_0, const std::vector<T>& b, size_t r, double eig_min, double eig_max, double accuracy);
         // Destructor
         ~CSR_matrix() = default;
     };
@@ -135,72 +141,143 @@ std::pair<size_t, size_t> CSR_matrix_space::CSR_matrix<T>::getOrder() const {
     return std::make_pair(this->M, this->N);
 }
 
-// CSR matrix solvers
+// CSR matrix SLAE solvers
 // Jacobi method
 template<typename T>
-std::pair<std::vector<T>, std::pair<size_t, std::vector<double>>>
-        CSR_matrix_space::CSR_matrix<T>::Jacobi_solver(const std::vector<T>& x_0, const std::vector<T>& b, double accuracy) {
+std::pair<std::vector<T>, std::pair<size_t, std::vector<double>>> CSR_matrix_space::CSR_matrix<T>::Jacobi_method
+(const std::vector<T>& x_0, const std::vector<T>& b, double accuracy)
+{
+    // Initial approximation
     std::vector<T> x0 = x_0;
-    std::vector<T> r = *this * x0 - b;
+    std::vector<T> r = b - (*this) * x0;
+    // x on next iteration
     std::vector<T> x(x_0.size());
+    // Total number of iterations
     size_t count = 0;
+    // Vector to collect residual on each iteration
     std::vector<double> nev {sqrt(r * r)};
+    // Stop condition
     while (nev[count] > accuracy) {
+        // Finding next x algorithm
         for (int k = 0; k < x.size(); ++k) {
             x[k] = b[k];
+            double diag;
             for (int s = this->rows[k]; s < this->rows[k + 1]; ++s) {
-                if (this->cols[s] == k) continue;
+                if (this->cols[s] == k)
+                    diag = this->values[s];
                 x[k] -= x0[this->cols[s]] * this->values[s];
             }
-            x[k] /= (*this)(k, k);
+            x[k] /= diag;
         }
         x0 = x;
-        r = *this * x0 - b;
+        r = b - (*this) * x0;
         nev.push_back(sqrt(r * r));
         count++;
     }
-    return std::make_pair(x, std::make_pair(count, nev));
+    return std::make_pair(x0, std::make_pair(count, nev));
 }
 // Gauss-Seidel method
 template<typename T>
-std::pair<std::vector<T>, std::pair<size_t, std::vector<double>>>
-        CSR_matrix_space::CSR_matrix<T>::Gauss_Seidel_solver(const std::vector<T> &x_0, const std::vector<T> &b, double accuracy) {
+std::pair<std::vector<T>, std::pair<size_t, std::vector<double>>> CSR_matrix_space::CSR_matrix<T>::Gauss_Seidel_method
+(const std::vector<T>& x_0, const std::vector<T>& b, double accuracy)
+{
+    // Initial approximation
     std::vector<T> x = x_0;
-    std::vector<T> r = *this * x - b;
+    std::vector<T> r = b - (*this) * x;
+    // Total number of iterations
     size_t count = 0;
+    // Vector to collect residual on each iteration
     std::vector<double> nev {sqrt(r * r)};
+    // Stop condition
     while (nev[count] > accuracy) {
+        // Finding next x algorithm
         for (int k = 0; k < x.size(); ++k) {
             x[k] = b[k];
+            double diag;
             for (int s = this->rows[k]; s < this->rows[k + 1]; ++s) {
-                if (this->cols[s] == k) continue;
+                if (this->cols[s] == k)
+                    diag = this->values[s];
                 x[k] -= x[this->cols[s]] * this->values[s];
             }
-            x[k] /= (*this)(k, k);
+            x[k] /= diag;
         }
-        r = *this * x - b;
+        r = b - (*this) * x;
         nev.push_back(sqrt(r * r));
         count++;
     }
     return std::make_pair(x, std::make_pair(count, nev));
 }
-//Fixed point iteration method
+// Simple-iteration method
 template<typename T>
-std::pair<std::vector<T>, std::pair<size_t, std::vector<double>>>
-        CSR_matrix_space::CSR_matrix<T>::Fixed_point_iteration_solver(double tau,const std::vector<T>& x_0,
-                                                                      const std::vector<T>& b,
-                                                                      double accuracy) {
-    std::vector<T> x0 = x_0;
-    std::vector<T> r = (*this) * x0 - b;
-    std::vector<T> x(x0.size());
+std::pair<std::vector<T>, std::pair<size_t, std::vector<double>>> CSR_matrix_space::CSR_matrix<T>::Simple_iteration_method
+(const std::vector<T>& x_0, const std::vector<T>& b, double tau, double accuracy)
+{
+    // Initial approximation
+    std::vector<T> x = x_0;
+    std::vector<T> r = b - (*this) * x;
+    // Total number of iterations
     size_t count = 0;
-    std::vector<double> nev {sqrt(r * r)};
+    // Vector to collect residual on each iteration
+    std::vector<double> nev{sqrt(r * r)};
+    // Stop condition
     while (nev[count] > accuracy) {
-        x = x0 + tau * (b - *this * x0);
-        x0 = x;
-        r = *this * x0 - b;
+        // Finding next x algorithm
+        r = b - (*this) * x;
+        x = x + tau * r;
         nev.push_back(sqrt(r * r));
         count++;
+    }
+    return std::make_pair(x, std::make_pair(count, nev));
+}
+// Sim w/ Chebyshev acceleration
+template<typename T>
+std::pair<std::vector<T>, std::pair<size_t, std::vector<double>>> CSR_matrix_space::CSR_matrix<T>::SIM_Chebyshev_acceleration
+(const std::vector<T>& x_0, const std::vector<T>& b, size_t R, double eig_min, double eig_max, double accuracy)
+{
+    // Amount of polynomial's roots
+    double n = pow(2, R);
+    // Vector of polynomial's roots
+    std::vector<double> z(static_cast<size_t>(n));
+    // Constants
+    const double sinA = sin(M_PI / n);
+    const double cosA = cos(M_PI / n);
+    double sinB = sin(M_PI / (2 * n));
+    z[0] = cos(M_PI / (2 * n));
+    // Algorithm to find roots
+    for (int i = 1; i < n; ++i) {
+        z[i] = z[i - 1] * cosA - sinB * sinA;
+        sinB = z[i - 1] * sinA + sinB * cosA;
+        z[i - 1] = (eig_min + eig_max) / 2 + (eig_max - eig_min) / 2 * z[i - 1];
+    }
+    z[static_cast<size_t>(n) - 1] = (eig_min + eig_max) / 2 + (eig_max - eig_min) / 2 * z[static_cast<size_t>(n) - 1];
+    // Vector of indexes
+    std::vector<size_t> indexes(static_cast<size_t>(n));
+    indexes[static_cast<size_t>(pow(2, R - 1))] = 1;
+    // Indexes reshuffle
+    for (int i = 2; i <= R; ++i) {
+        auto step = static_cast<int>(pow(2, R - i));
+        for (int j = 0; j < n; j += 2 * step) {
+            indexes[j + step] = static_cast<size_t>(pow(2, i)) - indexes[j] - 1;
+        }
+    }
+    // Initial approximation
+    std::vector<T> x = x_0;
+    std::vector<T> r = b - (*this) * x;
+    // Total number of iterations
+    size_t count = 0;
+    // Vector to collect residual on each iteration
+    std::vector<double> nev{sqrt(r * r)};
+    while (nev[count] > accuracy) {
+        // Unique tau on each iteration
+        for (auto& id: indexes) {
+            // Finding next x algorithm
+            r = b - (*this) * x;
+            x = x + (1 / z[id]) * r;
+            nev.push_back(sqrt(r * r));
+            count++;
+            if (nev[count] < accuracy)
+                break;
+        }
     }
     return std::make_pair(x, std::make_pair(count, nev));
 }
