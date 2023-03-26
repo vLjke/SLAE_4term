@@ -51,5 +51,11 @@ std::ostream& operator<<(std::ostream& os, const std::vector<T>& vec) {
     return os;
 }
 
+template<typename T>
+std::vector<T>& operator/=(std::vector<T>& left, T right) {
+    for (auto& v: left)
+        v /= right;
+    return left;
+}
 
 #endif //SLAE_4TERM_VECTOR_OPERATIONS_H

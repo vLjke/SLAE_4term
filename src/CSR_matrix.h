@@ -5,7 +5,6 @@
 #include <vector>
 #include <ranges>
 #include <algorithm>
-#include <utility>
 #include "Vector_operations.h"
 
 namespace DOK_cell_space
@@ -29,28 +28,101 @@ namespace CSR_matrix_space
         std::vector<T> values;
         std::vector<size_t> cols;
         std::vector<size_t> rows;
+
+        // Additional methods
+        void SSOR_make_iteration(std::vector<T>& x, const std::vector<T>& b, double omega) const {
+            // Step 0.5
+            for (int k = 0; k < x.size(); ++k) {
+                // temp var to find Dx later
+                double temp = x[k];
+                x[k] = omega * b[k];
+                double diag;
+                for (int s = this->rows[k]; s < this->rows[k + 1]; ++s) {
+                    if (this->cols[s] == k)
+                        diag = this->values[s];
+                    else
+                        x[k] -= omega * x[this->cols[s]] * this->values[s];
+                }
+                x[k] /= diag;
+                x[k] += (1 - omega) * temp;
+            }
+            // Step 1
+            for (int k = x.size() - 1; k >= 0; --k) {
+                // temp var for to find Dx later
+                double temp = x[k];
+                x[k] = omega * b[k];
+                double diag;
+                for (int s = this->rows[k]; s < this->rows[k + 1]; ++s) {
+                    if (this->cols[s] == k)
+                        diag = this->values[s];
+                    else
+                        x[k] -= omega * x[this->cols[s]] * this->values[s];
+                }
+                x[k] /= diag;
+                x[k] += (1 - omega) * temp;
+            }
+        }
+        void Sym_GS_make_iteration(std::vector<T>& x, const std::vector<T>& b) const {
+            // Step 0.5
+            for (int k = 0; k < x.size(); ++k) {
+                x[k] = b[k];
+                double diag;
+                for (int s = this->rows[k]; s < this->rows[k + 1]; ++s) {
+                    if (this->cols[s] == k)
+                        diag = this->values[s];
+                    else
+                        x[k] -= x[this->cols[s]] * this->values[s];
+                }
+                x[k] /= diag;
+            }
+            // Step 1
+            for (int k = x.size() - 1; k >= 0; --k) {
+                x[k] = b[k];
+                double diag;
+                for (int s = this->rows[k]; s < this->rows[k + 1]; ++s) {
+                    if (this->cols[s] == k)
+                        diag = this->values[s];
+                    else
+                        x[k] -= x[this->cols[s]] * this->values[s];
+                }
+                x[k] /= diag;
+            }
+        }
+
     public:
         // Constructors
         CSR_matrix() = default;
         CSR_matrix(size_t M, size_t N, const std::vector<DOK_cell_space::cell<T>>& vec);
+
         // Operators
         const T& operator()(size_t i, size_t j) const;
         T operator()(size_t i, size_t j);
         std::vector<T> operator*(const std::vector<T>& vec) const;
         std::pair<size_t, size_t> getOrder() const;
+
         // SLAE Solvers
         // Jacobi method
         std::pair<std::vector<T>, std::pair<size_t, std::vector<double>>> Jacobi_method
-        (const std::vector<T>& x_0, const std::vector<T>& b, double accuracy);
+        (const std::vector<T>& x_0, const std::vector<T>& b, double accuracy) const;
         // Gauss-Seidel method
         std::pair<std::vector<T>, std::pair<size_t, std::vector<double>>> Gauss_Seidel_method
-        (const std::vector<T>& x_0, const std::vector<T>& b, double accuracy);
+        (const std::vector<T>& x_0, const std::vector<T>& b, double accuracy) const;
+        // Symmetrical Gauss-Seidel method
+        std::pair<std::vector<T>, std::pair<size_t, std::vector<double>>> Symmetrical_GS_method
+        (const std::vector<T>& x_0, const std::vector<T>& b, double rho, double accuracy) const;
+        // SOR method
+        std::pair<std::vector<T>, std::pair<size_t, std::vector<double>>> SOR_method
+        (const std::vector<T>& x_0, const std::vector<T>& b, double omega, double accuracy) const;
+        // SSOR method
+        std::pair<std::vector<T>, std::pair<size_t, std::vector<double>>> SSOR_method
+        (const std::vector<T>& x_0, const std::vector<T>& b, double omega, double rho, double accuracy) const;
         // Simple-iteration method
         std::pair<std::vector<T>, std::pair<size_t, std::vector<double>>> Simple_iteration_method
-        (const std::vector<T>& x_0, const std::vector<T>& b, double tau, double accuracy);
+        (const std::vector<T>& x_0, const std::vector<T>& b, double tau, double accuracy) const;
         // SIM w/ Chebyshev acceleration
         std::pair<std::vector<T>, std::pair<size_t, std::vector<double>>> SIM_Chebyshev_acceleration
-        (const std::vector<T>& x_0, const std::vector<T>& b, size_t r, double eig_min, double eig_max, double accuracy);
+        (const std::vector<T>& x_0, const std::vector<T>& b, size_t r, double eig_min, double eig_max, double accuracy) const;
+
         // Destructor
         ~CSR_matrix() = default;
     };
@@ -145,7 +217,7 @@ std::pair<size_t, size_t> CSR_matrix_space::CSR_matrix<T>::getOrder() const {
 // Jacobi method
 template<typename T>
 std::pair<std::vector<T>, std::pair<size_t, std::vector<double>>> CSR_matrix_space::CSR_matrix<T>::Jacobi_method
-(const std::vector<T>& x_0, const std::vector<T>& b, double accuracy)
+(const std::vector<T>& x_0, const std::vector<T>& b, double accuracy) const
 {
     // Initial approximation
     std::vector<T> x0 = x_0;
@@ -165,7 +237,8 @@ std::pair<std::vector<T>, std::pair<size_t, std::vector<double>>> CSR_matrix_spa
             for (int s = this->rows[k]; s < this->rows[k + 1]; ++s) {
                 if (this->cols[s] == k)
                     diag = this->values[s];
-                x[k] -= x0[this->cols[s]] * this->values[s];
+                else
+                    x[k] -= x0[this->cols[s]] * this->values[s];
             }
             x[k] /= diag;
         }
@@ -176,10 +249,11 @@ std::pair<std::vector<T>, std::pair<size_t, std::vector<double>>> CSR_matrix_spa
     }
     return std::make_pair(x0, std::make_pair(count, nev));
 }
+
 // Gauss-Seidel method
 template<typename T>
 std::pair<std::vector<T>, std::pair<size_t, std::vector<double>>> CSR_matrix_space::CSR_matrix<T>::Gauss_Seidel_method
-(const std::vector<T>& x_0, const std::vector<T>& b, double accuracy)
+(const std::vector<T>& x_0, const std::vector<T>& b, double accuracy) const
 {
     // Initial approximation
     std::vector<T> x = x_0;
@@ -197,7 +271,8 @@ std::pair<std::vector<T>, std::pair<size_t, std::vector<double>>> CSR_matrix_spa
             for (int s = this->rows[k]; s < this->rows[k + 1]; ++s) {
                 if (this->cols[s] == k)
                     diag = this->values[s];
-                x[k] -= x[this->cols[s]] * this->values[s];
+                else
+                    x[k] -= x[this->cols[s]] * this->values[s];
             }
             x[k] /= diag;
         }
@@ -207,10 +282,156 @@ std::pair<std::vector<T>, std::pair<size_t, std::vector<double>>> CSR_matrix_spa
     }
     return std::make_pair(x, std::make_pair(count, nev));
 }
+
+// Symmetrical Gauss-Seidel w/ Chebyshev acceleration method
+template<typename T>
+std::pair<std::vector<T>, std::pair<size_t, std::vector<double>>> CSR_matrix_space::CSR_matrix<T>::Symmetrical_GS_method
+(const std::vector<T>& x_0, const std::vector<T>& b, double rho, double accuracy) const
+{
+    // y_0
+    std::vector<T> y_even = x_0;
+    // y_1
+    std::vector<T> y_odd = x_0;
+    Sym_GS_make_iteration(y_odd, b);
+    // mu_0 && mu_1
+    double mu_even = 1;
+    double mu_odd = 1 / rho;
+    // Vector to keep (Py + c)
+    std::vector<T> temp = y_odd;
+    // Find (Py_1 + c)
+    Sym_GS_make_iteration(temp, b);
+    // Vector to collect residual on each iteration
+    std::vector<T> r = b - (*this) * y_odd;
+    std::vector<double> nev {sqrt(r * r)};
+    // Total number of iterations
+    size_t count = 0;
+    // Stop condition
+    while (nev[count] > accuracy) {
+        // On (i + 1) iteration we rewrite y_(i-1) vector and mu_(i-1),
+        // on different iterations y_(i-1) is in different variables, same thing with mu_(i-1)
+        // If count is even, y_(i-1) is in y_even and mu_(i-1) is in mu_even,
+        if (count % 2 == 0) {
+            y_even = -mu_even * y_even + 2 * mu_odd / rho * temp;
+            mu_even = 2 / rho * mu_odd - mu_even;
+            y_even /= mu_even;
+            r = b - (*this) * y_even;
+            temp = y_even;
+            // Calculate (Py_i + c)
+            Sym_GS_make_iteration(temp, b);
+        }
+        else {
+            y_odd = -mu_odd * y_odd + 2 * mu_even / rho * temp;
+            mu_odd = 2 / rho * mu_even - mu_odd;
+            y_odd /= mu_odd;
+            r = b - (*this) * y_odd;
+            temp = y_odd;
+            // Calculate (Py_i + c)
+            Sym_GS_make_iteration(temp, b);
+        }
+        nev.push_back(sqrt(r * r));
+        count++;
+    }
+    if (count % 2 == 0)
+        return std::make_pair(y_odd, std::make_pair(count, nev));
+    else
+        return std::make_pair(y_even, std::make_pair(count, nev));
+}
+
+// SOR method
+template<typename T>
+std::pair<std::vector<T>, std::pair<size_t, std::vector<double>>> CSR_matrix_space::CSR_matrix<T>::SOR_method
+(const std::vector<T>& x_0, const std::vector<T>& b, double omega, double accuracy) const
+{
+    // Initial approximation
+    std::vector<T> x = x_0;
+    std::vector<T> r = b - (*this) * x;
+    // Total number of iterations
+    size_t count = 0;
+    // Vector to collect residual on each iteration
+    std::vector<double> nev {sqrt(r * r)};
+    // Stop condition
+    while (nev[count] > accuracy) {
+        // Finding next x algorithm
+        for (int k = 0; k < x.size(); ++k) {
+            // temp var to find Dx later
+            double temp = x[k];
+            x[k] = omega * b[k];
+            double diag;
+            for (int s = this->rows[k]; s < this->rows[k + 1]; ++s) {
+                if (this->cols[s] == k)
+                    diag = this->values[s];
+                else
+                    x[k] -= omega * x[this->cols[s]] * this->values[s];
+            }
+            x[k] /= diag;
+            x[k] += (1 - omega) * temp;
+        }
+        r = b - (*this) * x;
+        nev.push_back(sqrt(r * r));
+        count++;
+    }
+    return std::make_pair(x, std::make_pair(count, nev));
+}
+
+// SSOR w/ Chebyshev acceleration method
+template<typename T>
+std::pair<std::vector<T>, std::pair<size_t, std::vector<double>>> CSR_matrix_space::CSR_matrix<T>::SSOR_method
+(const std::vector<T>& x_0, const std::vector<T>& b, double omega, double rho, double accuracy) const
+{
+    // y_0
+    std::vector<T> y_even = x_0;
+    // y_1
+    std::vector<T> y_odd = x_0;
+    SSOR_make_iteration(y_odd, b, omega);
+    // mu_0 && mu_1
+    double mu_even = 1;
+    double mu_odd = 1 / rho;
+    // Vector to keep (Py + c)
+    std::vector<T> temp = y_odd;
+    // Find (Py_1 + c)
+    SSOR_make_iteration(temp, b, omega);
+    // Vector to collect residual on each iteration
+    std::vector<T> r = b - (*this) * y_odd;
+    std::vector<double> nev {sqrt(r * r)};
+    // Total number of iterations
+    size_t count = 0;
+    // Stop condition
+    while (nev[count] > accuracy) {
+        // On (i + 1) iteration we rewrite y_(i-1) vector and mu_(i-1),
+        // on different iterations y_(i-1) is in different variables, same thing with mu_(i-1)
+        // If count is even, y_(i-1) is in y_even and mu_(i-1) is in mu_even,
+        if (count % 2 == 0) {
+            y_even = -mu_even * y_even + 2 * mu_odd / rho * temp;
+            mu_even = 2 / rho * mu_odd - mu_even;
+            y_even /= mu_even;
+            r = b - (*this) * y_even;
+            temp = y_even;
+            // Calculate (Py_i + c)
+            SSOR_make_iteration(temp, b, omega);
+        }
+        // If count is odd, y_(i-1) is in y_odd and mu_(i-1) is in mu_odd
+        else {
+            y_odd = -mu_odd * y_odd + 2 * mu_even / rho * temp;
+            mu_odd = 2 / rho * mu_even - mu_odd;
+            y_odd /= mu_odd;
+            r = b - (*this) * y_odd;
+            temp = y_odd;
+            // Calculate (Py_i + c)
+            SSOR_make_iteration(temp, b, omega);
+        }
+        nev.push_back(sqrt(r * r));
+        count++;
+    }
+    if (count % 2 == 0)
+        return std::make_pair(y_odd, std::make_pair(count, nev));
+    else
+        return std::make_pair(y_even, std::make_pair(count, nev));
+}
+
 // Simple-iteration method
 template<typename T>
 std::pair<std::vector<T>, std::pair<size_t, std::vector<double>>> CSR_matrix_space::CSR_matrix<T>::Simple_iteration_method
-(const std::vector<T>& x_0, const std::vector<T>& b, double tau, double accuracy)
+(const std::vector<T>& x_0, const std::vector<T>& b, double tau, double accuracy) const
 {
     // Initial approximation
     std::vector<T> x = x_0;
@@ -229,10 +450,11 @@ std::pair<std::vector<T>, std::pair<size_t, std::vector<double>>> CSR_matrix_spa
     }
     return std::make_pair(x, std::make_pair(count, nev));
 }
-// Sim w/ Chebyshev acceleration
+
+// SIM w/ Chebyshev acceleration
 template<typename T>
 std::pair<std::vector<T>, std::pair<size_t, std::vector<double>>> CSR_matrix_space::CSR_matrix<T>::SIM_Chebyshev_acceleration
-(const std::vector<T>& x_0, const std::vector<T>& b, size_t R, double eig_min, double eig_max, double accuracy)
+(const std::vector<T>& x_0, const std::vector<T>& b, size_t R, double eig_min, double eig_max, double accuracy) const
 {
     // Amount of polynomial's roots
     double n = pow(2, R);
@@ -281,4 +503,5 @@ std::pair<std::vector<T>, std::pair<size_t, std::vector<double>>> CSR_matrix_spa
     }
     return std::make_pair(x, std::make_pair(count, nev));
 }
+
 #endif //SLAE_4TERM_CSR_MATRIX_H
