@@ -107,13 +107,13 @@ namespace CSR_matrix_space
         // Gauss-Seidel method
         std::pair<std::vector<T>, std::pair<size_t, std::vector<double>>> Gauss_Seidel_method
         (const std::vector<T>& x_0, const std::vector<T>& b, double accuracy) const;
-        // Symmetrical Gauss-Seidel method
+        // Symmetrical Gauss-Seidel w/ Chebyshev acceleration method
         std::pair<std::vector<T>, std::pair<size_t, std::vector<double>>> Symmetrical_GS_method
         (const std::vector<T>& x_0, const std::vector<T>& b, double rho, double accuracy) const;
         // SOR method
         std::pair<std::vector<T>, std::pair<size_t, std::vector<double>>> SOR_method
         (const std::vector<T>& x_0, const std::vector<T>& b, double omega, double accuracy) const;
-        // SSOR method
+        // SSOR w/ Chebyshev acceleration method
         std::pair<std::vector<T>, std::pair<size_t, std::vector<double>>> SSOR_method
         (const std::vector<T>& x_0, const std::vector<T>& b, double omega, double rho, double accuracy) const;
         // Simple-iteration method
@@ -122,6 +122,9 @@ namespace CSR_matrix_space
         // SIM w/ Chebyshev acceleration
         std::pair<std::vector<T>, std::pair<size_t, std::vector<double>>> SIM_Chebyshev_acceleration
         (const std::vector<T>& x_0, const std::vector<T>& b, size_t r, double eig_min, double eig_max, double accuracy) const;
+        // Steepest descent method
+        std::pair<std::vector<T>, std::pair<size_t, std::vector<double>>> Steepest_descent_method
+        (const std::vector<T>& x_0, const std::vector<T>& b, double accuracy) const;
 
         // Destructor
         ~CSR_matrix() = default;
@@ -500,6 +503,36 @@ std::pair<std::vector<T>, std::pair<size_t, std::vector<double>>> CSR_matrix_spa
             if (nev[count] < accuracy)
                 break;
         }
+    }
+    return std::make_pair(x, std::make_pair(count, nev));
+}
+
+// Steepest descent method
+template<typename T>
+std::pair<std::vector<T>, std::pair<size_t, std::vector<double>>> CSR_matrix_space::CSR_matrix<T>::Steepest_descent_method
+(const std::vector<T>& x_0, const std::vector<T>& b, double accuracy) const
+{
+    // Initial approximation
+    std::vector<T> x = x_0;
+    std::vector<T> r = b - (*this) * x;
+    // Total number of iterations
+    size_t count = 0;
+    // Vector to collect residual on each iteration
+    std::vector<double> nev{sqrt(r * r)};
+    // Each iteration's temporary variables
+    std::vector<T> Ar(x_0.size());
+    double alpha;
+    // Stop condition
+    while (nev[count] > accuracy) {
+        // Ar will be used twice, we should calculate it only once
+        Ar = (*this) * r;
+        // Finding next alpha and next x
+        alpha = r * r / (r * Ar);
+        x = x + alpha * r;
+        // Finding next r
+        r = r - alpha * Ar;
+        nev.push_back(sqrt(r * r));
+        count++;
     }
     return std::make_pair(x, std::make_pair(count, nev));
 }
