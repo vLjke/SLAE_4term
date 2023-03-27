@@ -314,3 +314,29 @@ TEST(CSR_matrix_tests, Steepest_descent_method) {
     std::cout << "SIM with Chebyshev acceleration: " << resFast.second.first << " iterations made" << std::endl;
     std::cout << "Steepest descent method: " << res.second.first << " iterations made" << std::endl;
 }
+
+// CSR matrix Heavy ball method test
+TEST(CSR_matrix_tests, Heavy_ball_method) {
+    // Symmetrical m > 0 matrix
+    CSR_matrix<double> m {3, 3, {{0, 0, 12}, {0, 1, 17}, {0, 2, 3}, {1, 0, 17}, {1, 1, 15825}, {1, 2, 28},
+                                 {2, 0, 3}, {2, 1, 28}, {2, 2, 238}}};
+    // Initial approximation
+    std::vector<double> x0(3, 1);
+    // b vector
+    std::vector<double> b {1, 2, 3};
+    // Precise solution
+    std::vector<double> r {0.0804084117, 0.0000194982, 0.0115891967};
+    double accuracy = pow(10, -12);
+    // Result w/ Steepest_descent_method
+    auto resDescent = m.Steepest_descent_method(x0, b, accuracy);
+    // Result w/ Heavy ball method
+    auto resHeavy = m.Heavy_ball_method(x0, b, accuracy);
+    // Testing results
+    for (int i = 0; i < r.size(); ++i) {
+        ASSERT_NEAR(resDescent.first[i], r[i], pow(10, -10));
+        ASSERT_NEAR(resHeavy.first[i], r[i], pow(10, -10));
+    }
+    // Number of iterations made
+    std::cout << "Steepest descent method: " << resDescent.second.first << " iterations made" << std::endl;
+    std::cout << "Heavy ball method: " << resHeavy.second.first << " iterations made" << std::endl;
+}

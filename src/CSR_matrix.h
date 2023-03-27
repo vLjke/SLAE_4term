@@ -119,11 +119,14 @@ namespace CSR_matrix_space
         // Simple-iteration method
         std::pair<std::vector<T>, std::pair<size_t, std::vector<double>>> Simple_iteration_method
         (const std::vector<T>& x_0, const std::vector<T>& b, double tau, double accuracy) const;
-        // SIM w/ Chebyshev acceleration
+        // Simple-iteration method w/ Chebyshev acceleration
         std::pair<std::vector<T>, std::pair<size_t, std::vector<double>>> SIM_Chebyshev_acceleration
         (const std::vector<T>& x_0, const std::vector<T>& b, size_t r, double eig_min, double eig_max, double accuracy) const;
         // Steepest descent method
         std::pair<std::vector<T>, std::pair<size_t, std::vector<double>>> Steepest_descent_method
+        (const std::vector<T>& x_0, const std::vector<T>& b, double accuracy) const;
+        // Heavy ball method
+        std::pair<std::vector<T>, std::pair<size_t, std::vector<double>>> Heavy_ball_method
         (const std::vector<T>& x_0, const std::vector<T>& b, double accuracy) const;
 
         // Destructor
@@ -233,7 +236,7 @@ std::pair<std::vector<T>, std::pair<size_t, std::vector<double>>> CSR_matrix_spa
     std::vector<double> nev {sqrt(r * r)};
     // Stop condition
     while (nev[count] > accuracy) {
-        // Finding next x algorithm
+        // Finding x_(i+1)
         for (int k = 0; k < x.size(); ++k) {
             x[k] = b[k];
             double diag;
@@ -267,7 +270,7 @@ std::pair<std::vector<T>, std::pair<size_t, std::vector<double>>> CSR_matrix_spa
     std::vector<double> nev {sqrt(r * r)};
     // Stop condition
     while (nev[count] > accuracy) {
-        // Finding next x algorithm
+        // Finding x_(i+1)
         for (int k = 0; k < x.size(); ++k) {
             x[k] = b[k];
             double diag;
@@ -354,7 +357,7 @@ std::pair<std::vector<T>, std::pair<size_t, std::vector<double>>> CSR_matrix_spa
     std::vector<double> nev {sqrt(r * r)};
     // Stop condition
     while (nev[count] > accuracy) {
-        // Finding next x algorithm
+        // Finding x_(i+1)
         for (int k = 0; k < x.size(); ++k) {
             // temp var to find Dx later
             double temp = x[k];
@@ -445,7 +448,7 @@ std::pair<std::vector<T>, std::pair<size_t, std::vector<double>>> CSR_matrix_spa
     std::vector<double> nev{sqrt(r * r)};
     // Stop condition
     while (nev[count] > accuracy) {
-        // Finding next x algorithm
+        // Finding x_(i+1)
         r = b - (*this) * x;
         x = x + tau * r;
         nev.push_back(sqrt(r * r));
@@ -495,7 +498,7 @@ std::pair<std::vector<T>, std::pair<size_t, std::vector<double>>> CSR_matrix_spa
     while (nev[count] > accuracy) {
         // Unique tau on each iteration
         for (auto& id: indexes) {
-            // Finding next x algorithm
+            // Finding x_(i+1)
             r = b - (*this) * x;
             x = x + (1 / z[id]) * r;
             nev.push_back(sqrt(r * r));
@@ -526,10 +529,10 @@ std::pair<std::vector<T>, std::pair<size_t, std::vector<double>>> CSR_matrix_spa
     while (nev[count] > accuracy) {
         // Ar will be used twice, we should calculate it only once
         Ar = (*this) * r;
-        // Finding next alpha and next x
+        // Finding alpha and x_(i+1)
         alpha = r * r / (r * Ar);
         x = x + alpha * r;
-        // Finding next r
+        // Finding r_(i+1)
         r = r - alpha * Ar;
         nev.push_back(sqrt(r * r));
         count++;
@@ -537,4 +540,48 @@ std::pair<std::vector<T>, std::pair<size_t, std::vector<double>>> CSR_matrix_spa
     return std::make_pair(x, std::make_pair(count, nev));
 }
 
+// Heavy ball method
+template<typename T>
+std::pair<std::vector<T>, std::pair<size_t, std::vector<double>>> CSR_matrix_space::CSR_matrix<T>::Heavy_ball_method
+(const std::vector<T>& x_0, const std::vector<T>& b, double accuracy) const {
+    // Vector x_i
+    std::vector<T> x = x_0;
+    // Vector x_(i-1)
+    std::vector<T> x0 = x;
+    // Vector d = x_i - x_(i-1) -- direction on previous iteration
+    std::vector<T> d(x_0.size());
+    // Residual
+    std::vector<T> r = (*this) * x - b;
+    // Total number of iterations
+    size_t count = 0;
+    // Vector to collect residual on each iteration
+    std::vector<double> nev{sqrt(r * r)};
+    // Each iteration's temporary variables
+    T rAr, rAd, rr;
+    // Find x_1 using steepest descent method
+    double alpha = (r * r) / (r * ((*this) * r));;
+    x = x - alpha * r;
+    // Beta variable
+    double beta;
+    // Stop condition
+    while (nev[count] > accuracy) {
+        // Direction on previous iteration
+        d = x - x0;
+        x0 = x;
+        // Variables that are used several times
+        rAd = r * ((*this) * d);
+        rAr = r * ((*this) * r);
+        rr = r * r;
+        // Finding alpha and beta
+        beta = (rr * rAd - r * d * rAr) / (d * ((*this) * d) * rAr - rAd * rAd);
+        alpha = (rr + beta * rAd) / rAr;
+        // Finding x_(i+1)
+        x = x - alpha * r + beta * d;
+        // Finding r_(i+1)
+        r = (*this) * x - b;
+        nev.push_back(sqrt(r * r));
+        count++;
+    }
+    return std::make_pair(x, std::make_pair(count, nev));
+}
 #endif //SLAE_4TERM_CSR_MATRIX_H
