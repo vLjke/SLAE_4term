@@ -11,8 +11,8 @@ TEST(Tasks, Task_3) {
     CSR_matrix<double> m {3, 3, {{0, 0, 10}, {0, 1, 1}, {1, 0, 1}, {1, 1, 7}, {2, 1, 0.1}, {2, 2, 1}}};
     std::vector<double> x0(3);
     std::vector<double> b {20, 30, 1};
-    double accuracy = pow(10, -12);
-    double tau = pow(10, -3);
+    double accuracy = 1e-12;
+    double tau = 1e-3;
 
     std::ofstream out;
     out.open("/home/vljke/Documents/Clion projects/SLAE_4term/tests/Tasks/Task3/data.txt");
@@ -21,7 +21,7 @@ TEST(Tasks, Task_3) {
             auto res = m.Simple_iteration_method(x0, b, tau, accuracy);
             out << res.second.first << " " << tau;
             out << std::endl;
-            tau += pow(10, -4);
+            tau += 1e-4;
     }
 }
 
@@ -30,13 +30,13 @@ TEST(Tasks, Task_4) {
                                  {2, 0, 3}, {2, 1, 28}, {2, 2, 238}}};
     std::vector<double> x0 {1, 1, 1};
     std::vector<double> b {1, 2, 3};
-    std::vector<double> c {pow(10, 10), pow(10, -12), pow(10, 5)};
-    double accuracy = pow(10, -12);
+    std::vector<double> c {1e-10, 1e-12, 1e5};
+    double accuracy = 1e-12;
 
     std::ofstream out1;
     out1.open("/home/vljke/Documents/Clion projects/SLAE_4term/tests/Tasks/Task4/data_Fixed_point.txt");
     if (out1.is_open()) {
-        double tau = 0.0001;
+        double tau = 1e-4;
         auto res = m.Simple_iteration_method(x0, b, tau, accuracy);
         for (int i = 0; i < res.second.second.size(); ++i) {
             out1 << i << " " << res.second.second[i];

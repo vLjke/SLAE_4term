@@ -102,7 +102,7 @@ TEST(CSR_matrix_tests, matrix_mult_vector_1) {
         // Checking multiply operator
         std::vector<double> res = m * v;
         for (int i = 0; i < MN[0]; ++i)
-            ASSERT_NEAR(res[i], r[i], pow(10, -10))
+            ASSERT_NEAR(res[i], r[i], 1e-10)
             << "!!! TEST FAILED ON COORDINATE NUMBER " << i << " !!!" << std::endl;
     }
     file.close();
@@ -163,7 +163,7 @@ TEST(CSR_matrix_tests, matrix_mult_vector_2) {
         // Checking multiply operator
         std::vector<double> res = m * v;
         for (int i = 0; i < MN[0]; ++i)
-            ASSERT_NEAR(res[i], r[i], pow(10, -10))
+            ASSERT_NEAR(res[i], r[i], 1e-10)
             << "!!! TEST FAILED ON COORDINATE NUMBER " << i << " !!!" << std::endl;
     }
     file.close();
@@ -219,7 +219,7 @@ TEST(CSR_matrix_tests, matrix_get_element) {
                 ssj >> s;
                 i_j_val[j] = std::stod(s);
             }
-            ASSERT_NEAR(i_j_val[2], m(i_j_val[0], i_j_val[1]), pow(10, -10))
+            ASSERT_NEAR(i_j_val[2], m(i_j_val[0], i_j_val[1]), 1e-10)
             << "!!! TEST FAILED ON INDEXES i = " << i_j_val[0] << ", j = " << i_j_val[1] << " !!!" << std::endl;
         }
     }
@@ -237,7 +237,7 @@ TEST(CSR_matrix_tests, SIM_Chebyshev_acceleration) {
     std::vector<double> b {1, 2, 3};
     // Precise solution
     std::vector<double> r {0.0804084117, 0.0000194982, 0.0115891967};
-    double accuracy = pow(10, -12);
+    double accuracy = 1e-12;
     // Result w/ Chebyshev acceleration
     size_t R = 5;
     double eig_min = 11.8;
@@ -248,8 +248,8 @@ TEST(CSR_matrix_tests, SIM_Chebyshev_acceleration) {
     auto res = m.Simple_iteration_method(x0, b, tau, accuracy);
     // Testing results
     for (int i = 0; i < r.size(); ++i) {
-        ASSERT_NEAR(res.first[i], r[i], pow(10, -10));
-        ASSERT_NEAR(resFast.first[i], r[i], pow(10, -10));
+        ASSERT_NEAR(res.first[i], r[i], 1e-10);
+        ASSERT_NEAR(resFast.first[i], r[i], 1e-10);
     }
     // Number of iterations made
     std::cout << "SIM with Chebyshev acceleration: " << resFast.second.first << " iterations made" << std::endl;
@@ -267,7 +267,7 @@ TEST(CSR_matrix_tests, SOR_method) {
     std::vector<double> b {1, 2, 3};
     // Precise solution
     std::vector<double> r {0.0804084117, 0.0000194982, 0.0115891967};
-    double accuracy = pow(10, -12);
+    double accuracy = 1e-12;
     // Result w/ Chebyshev acceleration
     size_t R = 5;
     double eig_min = 11.8;
@@ -278,8 +278,37 @@ TEST(CSR_matrix_tests, SOR_method) {
     auto res = m.SOR_method(x0, b, omega, accuracy);
     // Testing results
     for (int i = 0; i < r.size(); ++i) {
-        ASSERT_NEAR(res.first[i], r[i], pow(10, -10));
-        ASSERT_NEAR(resFast.first[i], r[i], pow(10, -10));
+        ASSERT_NEAR(res.first[i], r[i], 1e-10);
+        ASSERT_NEAR(resFast.first[i], r[i], 1e-10);
+    }
+    // Number of iterations made
+    std::cout << "SIM with Chebyshev acceleration: " << resFast.second.first << " iterations made" << std::endl;
+    std::cout << "SOR method: " << res.second.first << " iterations made" << std::endl;
+}
+
+TEST(CSR_matrix_tests, Symmetrical_GS_method) {
+    // Symmetrical m > 0 matrix
+    CSR_matrix<double> m {3, 3, {{0, 0, 12}, {0, 1, 17}, {0, 2, 3}, {1, 0, 17}, {1, 1, 15825}, {1, 2, 28},
+                                 {2, 0, 3}, {2, 1, 28}, {2, 2, 238}}};
+    // Initial approximation
+    std::vector<double> x0(3, 1);
+    // b vector
+    std::vector<double> b {1, 2, 3};
+    // Precise solution
+    std::vector<double> r {0.0804084117, 0.0000194982, 0.0115891967};
+    double accuracy = 1e-12;
+    // Result w/ Chebyshev acceleration
+    size_t R = 5;
+    double eig_min = 11.8;
+    double eig_max = 15825.1;
+    auto resFast = m.SIM_Chebyshev_acceleration(x0, b, R, eig_min, eig_max, accuracy);
+    // Result w/ SOR method
+    double omega = 0.5;
+    auto res = m.SSOR_method(x0, b, omega, eig_max, accuracy);
+    // Testing results
+    for (int i = 0; i < r.size(); ++i) {
+        ASSERT_NEAR(res.first[i], r[i], 1e-10);
+        ASSERT_NEAR(resFast.first[i], r[i], 1e-10);
     }
     // Number of iterations made
     std::cout << "SIM with Chebyshev acceleration: " << resFast.second.first << " iterations made" << std::endl;
@@ -297,7 +326,7 @@ TEST(CSR_matrix_tests, Steepest_descent_method) {
     std::vector<double> b {1, 2, 3};
     // Precise solution
     std::vector<double> r {0.0804084117, 0.0000194982, 0.0115891967};
-    double accuracy = pow(10, -12);
+    double accuracy = 1e-12;
     // Result w/ Chebyshev acceleration
     size_t R = 5;
     double eig_min = 11.8;
@@ -307,8 +336,8 @@ TEST(CSR_matrix_tests, Steepest_descent_method) {
     auto res = m.Steepest_descent_method(x0, b, accuracy);
     // Testing results
     for (int i = 0; i < r.size(); ++i) {
-        ASSERT_NEAR(res.first[i], r[i], pow(10, -10));
-        ASSERT_NEAR(resFast.first[i], r[i], pow(10, -10));
+        ASSERT_NEAR(res.first[i], r[i], 1e-10);
+        ASSERT_NEAR(resFast.first[i], r[i], 1e-10);
     }
     // Number of iterations made
     std::cout << "SIM with Chebyshev acceleration: " << resFast.second.first << " iterations made" << std::endl;
@@ -326,15 +355,15 @@ TEST(CSR_matrix_tests, Heavy_ball_method) {
     std::vector<double> b {1, 2, 3};
     // Precise solution
     std::vector<double> r {0.0804084117, 0.0000194982, 0.0115891967};
-    double accuracy = pow(10, -12);
+    double accuracy = 1e-12;
     // Result w/ Steepest_descent_method
     auto resDescent = m.Steepest_descent_method(x0, b, accuracy);
     // Result w/ Heavy ball method
     auto resHeavy = m.Heavy_ball_method(x0, b, accuracy);
     // Testing results
     for (int i = 0; i < r.size(); ++i) {
-        ASSERT_NEAR(resDescent.first[i], r[i], pow(10, -10));
-        ASSERT_NEAR(resHeavy.first[i], r[i], pow(10, -10));
+        ASSERT_NEAR(resDescent.first[i], r[i], 1e-10);
+        ASSERT_NEAR(resHeavy.first[i], r[i], 1e-10);
     }
     // Number of iterations made
     std::cout << "Steepest descent method: " << resDescent.second.first << " iterations made" << std::endl;

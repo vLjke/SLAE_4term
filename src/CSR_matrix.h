@@ -30,7 +30,8 @@ namespace CSR_matrix_space
         std::vector<size_t> rows;
 
         // Additional methods
-        void SSOR_make_iteration(std::vector<T>& x, const std::vector<T>& b, double omega) const {
+        std::vector<T> SSOR_make_iteration(const std::vector<T>& x_0, const std::vector<T>& b, double omega) const {
+            std::vector<T> x = x_0;
             // Step 0.5
             for (int k = 0; k < x.size(); ++k) {
                 // temp var to find Dx later
@@ -61,8 +62,10 @@ namespace CSR_matrix_space
                 x[k] /= diag;
                 x[k] += (1 - omega) * temp;
             }
+            return x;
         }
-        void Sym_GS_make_iteration(std::vector<T>& x, const std::vector<T>& b) const {
+        std::vector<T> Sym_GS_make_iteration(const std::vector<T>& x_0, const std::vector<T>& b) const {
+            std::vector<T> x = x_0;
             // Step 0.5
             for (int k = 0; k < x.size(); ++k) {
                 x[k] = b[k];
@@ -87,6 +90,7 @@ namespace CSR_matrix_space
                 }
                 x[k] /= diag;
             }
+            return x;
         }
 
     public:
@@ -233,7 +237,7 @@ std::pair<std::vector<T>, std::pair<size_t, std::vector<double>>> CSR_matrix_spa
     // Total number of iterations
     size_t count = 0;
     // Vector to collect residual on each iteration
-    std::vector<double> nev {sqrt(r * r)};
+    std::vector<double> nev {std::sqrt(r * r)};
     // Stop condition
     while (nev[count] > accuracy) {
         // Finding x_(i+1)
@@ -250,7 +254,7 @@ std::pair<std::vector<T>, std::pair<size_t, std::vector<double>>> CSR_matrix_spa
         }
         x0 = x;
         r = b - (*this) * x0;
-        nev.push_back(sqrt(r * r));
+        nev.push_back(std::sqrt(r * r));
         count++;
     }
     return std::make_pair(x0, std::make_pair(count, nev));
@@ -267,7 +271,7 @@ std::pair<std::vector<T>, std::pair<size_t, std::vector<double>>> CSR_matrix_spa
     // Total number of iterations
     size_t count = 0;
     // Vector to collect residual on each iteration
-    std::vector<double> nev {sqrt(r * r)};
+    std::vector<double> nev {std::sqrt(r * r)};
     // Stop condition
     while (nev[count] > accuracy) {
         // Finding x_(i+1)
@@ -283,7 +287,7 @@ std::pair<std::vector<T>, std::pair<size_t, std::vector<double>>> CSR_matrix_spa
             x[k] /= diag;
         }
         r = b - (*this) * x;
-        nev.push_back(sqrt(r * r));
+        nev.push_back(std::sqrt(r * r));
         count++;
     }
     return std::make_pair(x, std::make_pair(count, nev));
@@ -294,53 +298,36 @@ template<typename T>
 std::pair<std::vector<T>, std::pair<size_t, std::vector<double>>> CSR_matrix_space::CSR_matrix<T>::Symmetrical_GS_method
 (const std::vector<T>& x_0, const std::vector<T>& b, double rho, double accuracy) const
 {
-    // y_0
-    std::vector<T> y_even = x_0;
-    // y_1
-    std::vector<T> y_odd = x_0;
-    Sym_GS_make_iteration(y_odd, b);
-    // mu_0 && mu_1
-    double mu_even = 1;
-    double mu_odd = 1 / rho;
+    // y_(i-1) && y_i
+    std::vector<T> y_0 = x_0;
+    std::vector<T> y_1 = Sym_GS_make_iteration(y_0, b);
+    // mu_(i-1) && mu_i
+    double mu_0 = 1;
+    double mu_1 = 1 / rho;
     // Vector to keep (Py + c)
-    std::vector<T> temp = y_odd;
-    // Find (Py_1 + c)
-    Sym_GS_make_iteration(temp, b);
+    std::vector<T> temp = Sym_GS_make_iteration(y_1, b);
     // Vector to collect residual on each iteration
-    std::vector<T> r = b - (*this) * y_odd;
-    std::vector<double> nev {sqrt(r * r)};
+    std::vector<T> r = b - (*this) * y_1;
+    std::vector<double> nev {std::sqrt(r * r)};
     // Total number of iterations
     size_t count = 0;
     // Stop condition
     while (nev[count] > accuracy) {
         // On (i + 1) iteration we rewrite y_(i-1) vector and mu_(i-1),
-        // on different iterations y_(i-1) is in different variables, same thing with mu_(i-1)
-        // If count is even, y_(i-1) is in y_even and mu_(i-1) is in mu_even,
-        if (count % 2 == 0) {
-            y_even = -mu_even * y_even + 2 * mu_odd / rho * temp;
-            mu_even = 2 / rho * mu_odd - mu_even;
-            y_even /= mu_even;
-            r = b - (*this) * y_even;
-            temp = y_even;
-            // Calculate (Py_i + c)
-            Sym_GS_make_iteration(temp, b);
-        }
-        else {
-            y_odd = -mu_odd * y_odd + 2 * mu_even / rho * temp;
-            mu_odd = 2 / rho * mu_even - mu_odd;
-            y_odd /= mu_odd;
-            r = b - (*this) * y_odd;
-            temp = y_odd;
-            // Calculate (Py_i + c)
-            Sym_GS_make_iteration(temp, b);
-        }
-        nev.push_back(sqrt(r * r));
+        y_0 = -mu_0 * y_0 + 2 * mu_1 / rho * temp;
+        mu_0 = 2 / rho * mu_1 - mu_0;
+        y_0 /= mu_0;
+        // Calculate (Py_i + c)
+        temp = Sym_GS_make_iteration(y_0, b);
+        // Swap vectors and mu
+        y_1.swap(y_0);
+        std::swap(mu_0, mu_1);
+        // Calculate residual
+        r = b - (*this) * y_1;
+        nev.push_back(std::sqrt(r * r));
         count++;
     }
-    if (count % 2 == 0)
-        return std::make_pair(y_odd, std::make_pair(count, nev));
-    else
-        return std::make_pair(y_even, std::make_pair(count, nev));
+    return std::make_pair(y_1, std::make_pair(count, nev));
 }
 
 // SOR method
@@ -354,7 +341,7 @@ std::pair<std::vector<T>, std::pair<size_t, std::vector<double>>> CSR_matrix_spa
     // Total number of iterations
     size_t count = 0;
     // Vector to collect residual on each iteration
-    std::vector<double> nev {sqrt(r * r)};
+    std::vector<double> nev {std::sqrt(r * r)};
     // Stop condition
     while (nev[count] > accuracy) {
         // Finding x_(i+1)
@@ -373,7 +360,7 @@ std::pair<std::vector<T>, std::pair<size_t, std::vector<double>>> CSR_matrix_spa
             x[k] += (1 - omega) * temp;
         }
         r = b - (*this) * x;
-        nev.push_back(sqrt(r * r));
+        nev.push_back(std::sqrt(r * r));
         count++;
     }
     return std::make_pair(x, std::make_pair(count, nev));
@@ -384,54 +371,36 @@ template<typename T>
 std::pair<std::vector<T>, std::pair<size_t, std::vector<double>>> CSR_matrix_space::CSR_matrix<T>::SSOR_method
 (const std::vector<T>& x_0, const std::vector<T>& b, double omega, double rho, double accuracy) const
 {
-    // y_0
-    std::vector<T> y_even = x_0;
-    // y_1
-    std::vector<T> y_odd = x_0;
-    SSOR_make_iteration(y_odd, b, omega);
-    // mu_0 && mu_1
-    double mu_even = 1;
-    double mu_odd = 1 / rho;
+    // y_(i-1) && y_i
+    std::vector<T> y_0 = x_0;
+    std::vector<T> y_1 = SSOR_make_iteration(y_0, b, omega);
+    // mu_(i-1) && mu_i
+    double mu_0 = 1;
+    double mu_1 = 1 / rho;
     // Vector to keep (Py + c)
-    std::vector<T> temp = y_odd;
-    // Find (Py_1 + c)
-    SSOR_make_iteration(temp, b, omega);
+    std::vector<T> temp = SSOR_make_iteration(y_1, b, omega);
     // Vector to collect residual on each iteration
-    std::vector<T> r = b - (*this) * y_odd;
-    std::vector<double> nev {sqrt(r * r)};
+    std::vector<T> r = b - (*this) * y_1;
+    std::vector<double> nev {std::sqrt(r * r)};
     // Total number of iterations
     size_t count = 0;
     // Stop condition
     while (nev[count] > accuracy) {
         // On (i + 1) iteration we rewrite y_(i-1) vector and mu_(i-1),
-        // on different iterations y_(i-1) is in different variables, same thing with mu_(i-1)
-        // If count is even, y_(i-1) is in y_even and mu_(i-1) is in mu_even,
-        if (count % 2 == 0) {
-            y_even = -mu_even * y_even + 2 * mu_odd / rho * temp;
-            mu_even = 2 / rho * mu_odd - mu_even;
-            y_even /= mu_even;
-            r = b - (*this) * y_even;
-            temp = y_even;
-            // Calculate (Py_i + c)
-            SSOR_make_iteration(temp, b, omega);
-        }
-        // If count is odd, y_(i-1) is in y_odd and mu_(i-1) is in mu_odd
-        else {
-            y_odd = -mu_odd * y_odd + 2 * mu_even / rho * temp;
-            mu_odd = 2 / rho * mu_even - mu_odd;
-            y_odd /= mu_odd;
-            r = b - (*this) * y_odd;
-            temp = y_odd;
-            // Calculate (Py_i + c)
-            SSOR_make_iteration(temp, b, omega);
-        }
-        nev.push_back(sqrt(r * r));
+        y_0 = -mu_0 * y_0 + 2 * mu_1 / rho * temp;
+        mu_0 = 2 / rho * mu_1 - mu_0;
+        y_0 /= mu_0;
+        // Calculate (Py_i + c)
+        temp = SSOR_make_iteration(y_0, b, omega);
+        // Swap vectors and mu
+        y_1.swap(y_0);
+        std::swap(mu_0, mu_1);
+        // Calculate residual
+        r = b - (*this) * y_1;
+        nev.push_back(std::sqrt(r * r));
         count++;
     }
-    if (count % 2 == 0)
-        return std::make_pair(y_odd, std::make_pair(count, nev));
-    else
-        return std::make_pair(y_even, std::make_pair(count, nev));
+    return std::make_pair(y_1, std::make_pair(count, nev));
 }
 
 // Simple-iteration method
@@ -445,13 +414,13 @@ std::pair<std::vector<T>, std::pair<size_t, std::vector<double>>> CSR_matrix_spa
     // Total number of iterations
     size_t count = 0;
     // Vector to collect residual on each iteration
-    std::vector<double> nev{sqrt(r * r)};
+    std::vector<double> nev{std::sqrt(r * r)};
     // Stop condition
     while (nev[count] > accuracy) {
         // Finding x_(i+1)
         r = b - (*this) * x;
         x = x + tau * r;
-        nev.push_back(sqrt(r * r));
+        nev.push_back(std::sqrt(r * r));
         count++;
     }
     return std::make_pair(x, std::make_pair(count, nev));
@@ -463,14 +432,14 @@ std::pair<std::vector<T>, std::pair<size_t, std::vector<double>>> CSR_matrix_spa
 (const std::vector<T>& x_0, const std::vector<T>& b, size_t R, double eig_min, double eig_max, double accuracy) const
 {
     // Amount of polynomial's roots
-    double n = pow(2, R);
+    double n = std::pow(2, R);
     // Vector of polynomial's roots
     std::vector<double> z(static_cast<size_t>(n));
     // Constants
-    const double sinA = sin(M_PI / n);
-    const double cosA = cos(M_PI / n);
-    double sinB = sin(M_PI / (2 * n));
-    z[0] = cos(M_PI / (2 * n));
+    const double sinA = std::sin(M_PI / n);
+    const double cosA = std::cos(M_PI / n);
+    double sinB = std::sin(M_PI / (2 * n));
+    z[0] = std::cos(M_PI / (2 * n));
     // Algorithm to find roots
     for (int i = 1; i < n; ++i) {
         z[i] = z[i - 1] * cosA - sinB * sinA;
@@ -480,12 +449,12 @@ std::pair<std::vector<T>, std::pair<size_t, std::vector<double>>> CSR_matrix_spa
     z[static_cast<size_t>(n) - 1] = (eig_min + eig_max) / 2 + (eig_max - eig_min) / 2 * z[static_cast<size_t>(n) - 1];
     // Vector of indexes
     std::vector<size_t> indexes(static_cast<size_t>(n));
-    indexes[static_cast<size_t>(pow(2, R - 1))] = 1;
+    indexes[static_cast<size_t>(std::pow(2, R - 1))] = 1;
     // Indexes reshuffle
     for (int i = 2; i <= R; ++i) {
-        auto step = static_cast<int>(pow(2, R - i));
+        auto step = static_cast<int>(std::pow(2, R - i));
         for (int j = 0; j < n; j += 2 * step) {
-            indexes[j + step] = static_cast<size_t>(pow(2, i)) - indexes[j] - 1;
+            indexes[j + step] = static_cast<size_t>(std::pow(2, i)) - indexes[j] - 1;
         }
     }
     // Initial approximation
@@ -494,14 +463,14 @@ std::pair<std::vector<T>, std::pair<size_t, std::vector<double>>> CSR_matrix_spa
     // Total number of iterations
     size_t count = 0;
     // Vector to collect residual on each iteration
-    std::vector<double> nev{sqrt(r * r)};
+    std::vector<double> nev{std::sqrt(r * r)};
     while (nev[count] > accuracy) {
         // Unique tau on each iteration
         for (auto& id: indexes) {
             // Finding x_(i+1)
             r = b - (*this) * x;
             x = x + (1 / z[id]) * r;
-            nev.push_back(sqrt(r * r));
+            nev.push_back(std::sqrt(r * r));
             count++;
             if (nev[count] < accuracy)
                 break;
@@ -521,7 +490,7 @@ std::pair<std::vector<T>, std::pair<size_t, std::vector<double>>> CSR_matrix_spa
     // Total number of iterations
     size_t count = 0;
     // Vector to collect residual on each iteration
-    std::vector<double> nev{sqrt(r * r)};
+    std::vector<double> nev{std::sqrt(r * r)};
     // Each iteration's temporary variables
     std::vector<T> Ar(x_0.size());
     double alpha;
@@ -534,7 +503,7 @@ std::pair<std::vector<T>, std::pair<size_t, std::vector<double>>> CSR_matrix_spa
         x = x + alpha * r;
         // Finding r_(i+1)
         r = r - alpha * Ar;
-        nev.push_back(sqrt(r * r));
+        nev.push_back(std::sqrt(r * r));
         count++;
     }
     return std::make_pair(x, std::make_pair(count, nev));
@@ -555,7 +524,7 @@ std::pair<std::vector<T>, std::pair<size_t, std::vector<double>>> CSR_matrix_spa
     // Total number of iterations
     size_t count = 0;
     // Vector to collect residual on each iteration
-    std::vector<double> nev{sqrt(r * r)};
+    std::vector<double> nev{std::sqrt(r * r)};
     // Each iteration's temporary variables
     T rAr, rAd, rr;
     // Find x_1 using steepest descent method
@@ -579,7 +548,7 @@ std::pair<std::vector<T>, std::pair<size_t, std::vector<double>>> CSR_matrix_spa
         x = x - alpha * r + beta * d;
         // Finding r_(i+1)
         r = (*this) * x - b;
-        nev.push_back(sqrt(r * r));
+        nev.push_back(std::sqrt(r * r));
         count++;
     }
     return std::make_pair(x, std::make_pair(count, nev));

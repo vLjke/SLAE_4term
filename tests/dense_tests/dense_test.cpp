@@ -51,7 +51,7 @@ TEST(Dense_matrix_tests, matrix_mult_vector_1) {
         // Checking multiply operator
         std::vector<double> res = m * v;
         for (int i = 0; i < MN[0]; ++i)
-            ASSERT_NEAR(res[i], r[i], pow(10, -10))
+            ASSERT_NEAR(res[i], r[i], 1e-10)
             << "!!! TEST FAILED ON COORDINATE NUMBER " << i << " !!!" << std::endl;
     }
     file.close();
@@ -103,7 +103,7 @@ TEST(Dense_matrix_tests, matrix_mult_vector_2) {
         // Checking multiply operator
         std::vector<double> res = m * v;
         for (int i = 0; i < MN[0]; ++i)
-            ASSERT_NEAR(res[i], r[i], pow(10, -10))
+            ASSERT_NEAR(res[i], r[i], 1e-10)
             << "!!! TEST FAILED ON COORDINATE NUMBER " << i << " !!!" << std::endl;
     }
     file.close();
@@ -150,7 +150,7 @@ TEST(Dense_matrix_tests, matrix_get_elements) {
                 ssj >> s;
                 i_j_val[j] = std::stod(s);
             }
-            ASSERT_NEAR(i_j_val[2], m(i_j_val[0], i_j_val[1]), pow(10, -10))
+            ASSERT_NEAR(i_j_val[2], m(i_j_val[0], i_j_val[1]), 1e-10)
             << "!!! TEST FAILED ON INDEXES i =  " << i_j_val[0] << ", j = " << i_j_val[0] << " !!!" << std::endl;
         }
     }
@@ -230,13 +230,13 @@ TEST(Dense_matrix_tests, QR_decomp_HH_1) {
         std::cout << "Testing Q matrix first:" << std::endl;
         for (int i = 0; i < Q_R.first.getOrder().first; ++i)
             for (int j = 0; j < Q_R.first.getOrder().second; ++j)
-                ASSERT_NEAR(Q_R.first(i, j), Q(i, j), pow(10, -10))
+                ASSERT_NEAR(Q_R.first(i, j), Q(i, j), 1e-10)
                 << "!!! TEST FAILED ON MATRIX Q; ELEMENT INDEXES (" << i << ", " << j << ")" << std::endl;
         // Testing R matrix after Q matrix
         std::cout << "Matrix Q is correct, testing R matrix next:" << std::endl;
         for (int i = 0; i < Q_R.second.getOrder().first; ++i)
             for (int j = 0; j < Q_R.second.getOrder().second; ++j)
-                ASSERT_NEAR(Q_R.second(i, j), R(i, j), pow(10, -10))
+                ASSERT_NEAR(Q_R.second(i, j), R(i, j), 1e-10)
                 << "!!! TEST FAILED ON MATRIX R; ELEMENT INDEXES (" << i << ", " << j << ")" << std::endl;
         std::cout << "Matrix R is correct, end of the test." << std::endl;
     }
@@ -315,13 +315,13 @@ TEST(Dense_matrix_tests, QR_decomp_HH_2) {
         std::cout << "Testing Q matrix first:" << std::endl;
         for (int i = 0; i < Q_R.first.getOrder().first; ++i)
             for (int j = 0; j < Q_R.first.getOrder().second; ++j)
-                ASSERT_NEAR(Q_R.first(i, j), Q(i, j), pow(10, -10))
+                ASSERT_NEAR(Q_R.first(i, j), Q(i, j), 1e-10)
                 << "!!! TEST FAILED ON MATRIX Q; ELEMENT INDEXES (" << i << ", " << j << ")" << std::endl;
         // Testing R matrix after Q matrix
         std::cout << "Matrix Q is correct, testing R matrix next:" << std::endl;
         for (int i = 0; i < Q_R.second.getOrder().first; ++i)
             for (int j = 0; j < Q_R.second.getOrder().second; ++j)
-                ASSERT_NEAR(Q_R.second(i, j), R(i, j), pow(10, -10))
+                ASSERT_NEAR(Q_R.second(i, j), R(i, j), 1e-10)
                 << "!!! TEST FAILED ON MATRIX R; ELEMENT INDEXES (" << i << ", " << j << ")" << std::endl;
         std::cout << "Matrix R is correct, end of the test." << std::endl;
     }
