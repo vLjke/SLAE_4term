@@ -132,6 +132,9 @@ namespace CSR_matrix_space
         // Heavy ball method
         std::pair<std::vector<T>, std::pair<size_t, std::vector<double>>> Heavy_ball_method
         (const std::vector<T>& x_0, const std::vector<T>& b, double accuracy) const;
+        // Conjugate gradient method
+        std::pair<std::vector<T>, std::pair<size_t, std::vector<double>>> CG_method
+        (const std::vector<T>& x_0, const std::vector<T>& b, double accuracy) const;
 
         // Destructor
         ~CSR_matrix() = default;
@@ -553,4 +556,50 @@ std::pair<std::vector<T>, std::pair<size_t, std::vector<double>>> CSR_matrix_spa
     }
     return std::make_pair(x, std::make_pair(count, nev));
 }
+
+// Conjugate gradient method
+template<typename T>
+std::pair<std::vector<T>, std::pair<size_t, std::vector<double>>> CSR_matrix_space::CSR_matrix<T>::CG_method
+(const std::vector<T>& x_0, const std::vector<T>& b, double accuracy) const {
+    // Vector x_i
+    std::vector<T> x = x_0;
+    // Residual
+    std::vector<T> r = (*this) * x - b;
+    // Vector d, alpha and beta variables
+    std::vector<T> d = r;
+    double beta;
+    double alpha;
+    // We use Ad twice, will calculate it only once
+    std::vector<T> Ad(x_0.size());
+    // Total number of iterations
+    size_t count = 0;
+    // Vector to collect residual on each iteration
+    std::vector<double> nev{std::sqrt(r * r)};
+    while (nev[count] > accuracy) {
+        // N iterations to find solution (theoretically it's enough)
+        for (int i = 0; i < x_0.size(); ++i) {
+            // Check whether we reached solution
+            if (!isZero(r)) {
+                Ad = *this * d;
+                // Finding alpha_i and x_(i+1) via d_i and r_i
+                alpha = r * r / (d * Ad);
+                x = x - alpha * d;
+                // Finding beta_(i+1) via r_i and r_(i+1)
+                beta = 1 / (r * r);
+                // Calculating r_(i+1)
+                r = r - alpha * Ad;
+                beta *= (r * r);
+                // Finding d_(i+1)
+                d = r + beta * d;
+                // Collecting residual and increasing counter
+                nev.push_back(std::sqrt(r * r));
+                count++;
+            }
+            else
+                return std::make_pair(x, std::make_pair(count, nev));
+        }
+    }
+    return std::make_pair(x, std::make_pair(count, nev));
+}
+
 #endif //SLAE_4TERM_CSR_MATRIX_H

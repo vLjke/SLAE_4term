@@ -58,4 +58,11 @@ std::vector<T>& operator/=(std::vector<T>& left, T right) {
     return left;
 }
 
+template<typename T>
+bool isZero(const std::vector<T>& vec) {
+    for (auto& v: vec)
+        if (v != 0) return false;
+    return true;
+}
+
 #endif //SLAE_4TERM_VECTOR_OPERATIONS_H

@@ -238,7 +238,7 @@ TEST(CSR_matrix_tests, SIM_Chebyshev_acceleration) {
     // Precise solution
     std::vector<double> r {0.0804084117, 0.0000194982, 0.0115891967};
     double accuracy = 1e-12;
-    // Result w/ Chebyshev acceleration
+    // Result w/ SIM Chebyshev acceleration
     size_t R = 5;
     double eig_min = 11.8;
     double eig_max = 15825.1;
@@ -268,7 +268,7 @@ TEST(CSR_matrix_tests, SOR_method) {
     // Precise solution
     std::vector<double> r {0.0804084117, 0.0000194982, 0.0115891967};
     double accuracy = 1e-12;
-    // Result w/ Chebyshev acceleration
+    // Result w/ SIM Chebyshev acceleration
     size_t R = 5;
     double eig_min = 11.8;
     double eig_max = 15825.1;
@@ -286,7 +286,8 @@ TEST(CSR_matrix_tests, SOR_method) {
     std::cout << "SOR method: " << res.second.first << " iterations made" << std::endl;
 }
 
-TEST(CSR_matrix_tests, Symmetrical_GS_method) {
+// CSR matrix SSOR method test
+TEST(CSR_matrix_tests, SSOR_method) {
     // Symmetrical m > 0 matrix
     CSR_matrix<double> m {3, 3, {{0, 0, 12}, {0, 1, 17}, {0, 2, 3}, {1, 0, 17}, {1, 1, 15825}, {1, 2, 28},
                                  {2, 0, 3}, {2, 1, 28}, {2, 2, 238}}};
@@ -297,12 +298,12 @@ TEST(CSR_matrix_tests, Symmetrical_GS_method) {
     // Precise solution
     std::vector<double> r {0.0804084117, 0.0000194982, 0.0115891967};
     double accuracy = 1e-12;
-    // Result w/ Chebyshev acceleration
+    // Result w/ SIM Chebyshev acceleration
     size_t R = 5;
     double eig_min = 11.8;
     double eig_max = 15825.1;
     auto resFast = m.SIM_Chebyshev_acceleration(x0, b, R, eig_min, eig_max, accuracy);
-    // Result w/ SOR method
+    // Result w/ SSOR method
     double omega = 0.5;
     auto res = m.SSOR_method(x0, b, omega, eig_max, accuracy);
     // Testing results
@@ -312,7 +313,7 @@ TEST(CSR_matrix_tests, Symmetrical_GS_method) {
     }
     // Number of iterations made
     std::cout << "SIM with Chebyshev acceleration: " << resFast.second.first << " iterations made" << std::endl;
-    std::cout << "SOR method: " << res.second.first << " iterations made" << std::endl;
+    std::cout << "SSOR method: " << res.second.first << " iterations made" << std::endl;
 }
 
 // CSR matrix Steepest descent method test
@@ -327,12 +328,12 @@ TEST(CSR_matrix_tests, Steepest_descent_method) {
     // Precise solution
     std::vector<double> r {0.0804084117, 0.0000194982, 0.0115891967};
     double accuracy = 1e-12;
-    // Result w/ Chebyshev acceleration
+    // Result w/ SIM Chebyshev acceleration
     size_t R = 5;
     double eig_min = 11.8;
     double eig_max = 15825.1;
     auto resFast = m.SIM_Chebyshev_acceleration(x0, b, R, eig_min, eig_max, accuracy);
-    // Result w/ Steepest_descent_method
+    // Result w/ Steepest descent method
     auto res = m.Steepest_descent_method(x0, b, accuracy);
     // Testing results
     for (int i = 0; i < r.size(); ++i) {
@@ -356,7 +357,7 @@ TEST(CSR_matrix_tests, Heavy_ball_method) {
     // Precise solution
     std::vector<double> r {0.0804084117, 0.0000194982, 0.0115891967};
     double accuracy = 1e-12;
-    // Result w/ Steepest_descent_method
+    // Result w/ Steepest descent method
     auto resDescent = m.Steepest_descent_method(x0, b, accuracy);
     // Result w/ Heavy ball method
     auto resHeavy = m.Heavy_ball_method(x0, b, accuracy);
@@ -368,4 +369,30 @@ TEST(CSR_matrix_tests, Heavy_ball_method) {
     // Number of iterations made
     std::cout << "Steepest descent method: " << resDescent.second.first << " iterations made" << std::endl;
     std::cout << "Heavy ball method: " << resHeavy.second.first << " iterations made" << std::endl;
+}
+
+// CSR matrix Conjugate gradient method test
+TEST(CSR_matrix_tests, CG_method) {
+    // Symmetrical m > 0 matrix
+    CSR_matrix<double> m {3, 3, {{0, 0, 12}, {0, 1, 17}, {0, 2, 3}, {1, 0, 17}, {1, 1, 15825}, {1, 2, 28},
+                                 {2, 0, 3}, {2, 1, 28}, {2, 2, 238}}};
+    // Initial approximation
+    std::vector<double> x0(3, 1);
+    // b vector
+    std::vector<double> b {1, 2, 3};
+    // Precise solution
+    std::vector<double> r {0.0804084117, 0.0000194982, 0.0115891967};
+    double accuracy = 1e-12;
+    // Result w/ Steepest descent method
+    auto resDescent = m.Steepest_descent_method(x0, b, accuracy);
+    // Result w/ CG method
+    auto resCG = m.CG_method(x0, b, accuracy);
+    // Testing results
+    for (int i = 0; i < r.size(); ++i) {
+        ASSERT_NEAR(resDescent.first[i], r[i], 1e-10);
+        ASSERT_NEAR(resCG.first[i], r[i], 1e-10);
+    }
+    // Number of iterations made
+    std::cout << "Steepest descent method: " << resDescent.second.first << " iterations made" << std::endl;
+    std::cout << "Conjugate gradient method: " << resCG.second.first << " iterations made" << std::endl;
 }
