@@ -3,7 +3,7 @@
 #include <cmath>
 #include <string>
 #include "gtest/gtest.h"
-#include "../../src/CSR_matrix.h"
+#include "../../../src/CSR_matrix.h"
 
 using namespace CSR_matrix_space;
 

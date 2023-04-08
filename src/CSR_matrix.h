@@ -2,7 +2,9 @@
 #define SLAE_4TERM_CSR_MATRIX_H
 
 #include <iostream>
+#include <fstream>
 #include <vector>
+#include <utility>
 #include <ranges>
 #include <algorithm>
 #include "Vector_operations.h"
@@ -117,8 +119,11 @@ namespace CSR_matrix_space
         // SOR method
         std::pair<std::vector<T>, std::pair<size_t, std::vector<double>>> SOR_method
         (const std::vector<T>& x_0, const std::vector<T>& b, double omega, double accuracy) const;
-        // SSOR w/ Chebyshev acceleration method
+        // SSOR method
         std::pair<std::vector<T>, std::pair<size_t, std::vector<double>>> SSOR_method
+        (const std::vector<T>& x_0, const std::vector<T>& b, double omega, double accuracy) const;
+        // SSOR w/ Chebyshev acceleration method
+        std::pair<std::vector<T>, std::pair<size_t, std::vector<double>>> SSOR_Cheb_accel_method
         (const std::vector<T>& x_0, const std::vector<T>& b, double omega, double rho, double accuracy) const;
         // Simple-iteration method
         std::pair<std::vector<T>, std::pair<size_t, std::vector<double>>> Simple_iteration_method
@@ -369,9 +374,32 @@ std::pair<std::vector<T>, std::pair<size_t, std::vector<double>>> CSR_matrix_spa
     return std::make_pair(x, std::make_pair(count, nev));
 }
 
-// SSOR w/ Chebyshev acceleration method
+// SSOR method
 template<typename T>
 std::pair<std::vector<T>, std::pair<size_t, std::vector<double>>> CSR_matrix_space::CSR_matrix<T>::SSOR_method
+(const std::vector<T>& x_0, const std::vector<T>& b, double omega, double accuracy) const {
+    // Initial approximation
+    std::vector x = x_0;
+    std::vector<T> r = b - (*this) * x;
+    // Total number of iterations
+    size_t count = 0;
+    // Vector to collect residual on each iteration
+    std::vector<double> nev {std::sqrt(r * r)};
+    // Stop condition
+    while (nev[count] > accuracy) {
+        // Finding x_(i+1)
+        x = SSOR_make_iteration(x, b, omega);
+        r = b - (*this) * x;
+        // Finding residual
+        nev.push_back(std::sqrt(r * r));
+        count++;
+    }
+    return std::make_pair(x, std::make_pair(count, nev));
+}
+
+// SSOR w/ Chebyshev acceleration method
+template<typename T>
+std::pair<std::vector<T>, std::pair<size_t, std::vector<double>>> CSR_matrix_space::CSR_matrix<T>::SSOR_Cheb_accel_method
 (const std::vector<T>& x_0, const std::vector<T>& b, double omega, double rho, double accuracy) const
 {
     // y_(i-1) && y_i
@@ -561,6 +589,10 @@ std::pair<std::vector<T>, std::pair<size_t, std::vector<double>>> CSR_matrix_spa
 template<typename T>
 std::pair<std::vector<T>, std::pair<size_t, std::vector<double>>> CSR_matrix_space::CSR_matrix<T>::CG_method
 (const std::vector<T>& x_0, const std::vector<T>& b, double accuracy) const {
+
+    std::ofstream out;
+    out.open("/home/vljke/Documents/Clion projects/SLAE_4term/tests/Tasks/Test_2/Task2/CG.txt");
+
     // Vector x_i
     std::vector<T> x = x_0;
     // Residual
@@ -584,6 +616,7 @@ std::pair<std::vector<T>, std::pair<size_t, std::vector<double>>> CSR_matrix_spa
                 // Finding alpha_i and x_(i+1) via d_i and r_i
                 alpha = r * r / (d * Ad);
                 x = x - alpha * d;
+                out << d[0] << " " << d[x_0.size() - 1] << std::endl;
                 // Finding beta_(i+1) via r_i and r_(i+1)
                 beta = 1 / (r * r);
                 // Calculating r_(i+1)

@@ -305,7 +305,7 @@ TEST(CSR_matrix_tests, SSOR_method) {
     auto resFast = m.SIM_Chebyshev_acceleration(x0, b, R, eig_min, eig_max, accuracy);
     // Result w/ SSOR method
     double omega = 0.5;
-    auto res = m.SSOR_method(x0, b, omega, eig_max, accuracy);
+    auto res = m.SSOR_Cheb_accel_method(x0, b, omega, eig_max, accuracy);
     // Testing results
     for (int i = 0; i < r.size(); ++i) {
         ASSERT_NEAR(res.first[i], r[i], 1e-10);
