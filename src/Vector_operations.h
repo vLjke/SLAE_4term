@@ -59,6 +59,14 @@ std::vector<T>& operator/=(std::vector<T>& left, T right) {
 }
 
 template<typename T>
+std::vector<T> operator/(const std::vector<T>& left, T right) {
+    std::vector<T> res(left.size());
+    for (int i = 0; i < left.size(); ++i)
+        res[i] = left[i] / right;
+    return res;
+}
+
+template<typename T>
 bool isZero(const std::vector<T>& vec) {
     for (auto& v: vec)
         if (v != 0) return false;

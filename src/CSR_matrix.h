@@ -8,6 +8,7 @@
 #include <ranges>
 #include <algorithm>
 #include "Vector_operations.h"
+#include "Dense_matrix.h"
 
 namespace DOK_cell_space
 {
@@ -95,6 +96,22 @@ namespace CSR_matrix_space
             return x;
         }
 
+        std::vector<T> make_Arnoldi_iteration(std::vector<std::vector<T>>& v, Dense_matrix<T>& H, size_t i) const {
+            std::vector<T> res = (*this) * v[i];
+            for (int j = 0; j < i+1; ++j) {
+                H(j, i) = v[j] * res;
+                res = res - H(j, i) * v[j];
+            }
+            H(i+1, i) = std::sqrt(res * res);
+            res = res / H(i+1, i);
+            return res;
+        }
+        void make_GMRES_rotation(Dense_matrix<T>& H, const std::vector<std::pair<double, double>>& SinCos, size_t k, size_t j) const {
+            double temp = H(k, j);
+            H(k, j) = SinCos[k].second * H(k, j) + SinCos[k].first * H(k+1, j);
+            H(k+1, j) = -SinCos[k].first * temp + SinCos[k].second * H(k+1, j);
+        }
+
     public:
         // Constructors
         CSR_matrix() = default;
@@ -140,6 +157,9 @@ namespace CSR_matrix_space
         // Conjugate gradient method
         std::pair<std::vector<T>, std::pair<size_t, std::vector<double>>> CG_method
         (const std::vector<T>& x_0, const std::vector<T>& b, double accuracy) const;
+        // CMRES(n) method
+        std::pair<std::vector<T>, std::pair<size_t, std::vector<double>>> GMRESn_method
+        (const std::vector<T>& x_0, const std::vector<T>& b, size_t n, double accuracy) const;
 
         // Destructor
         ~CSR_matrix() = default;
@@ -590,9 +610,6 @@ template<typename T>
 std::pair<std::vector<T>, std::pair<size_t, std::vector<double>>> CSR_matrix_space::CSR_matrix<T>::CG_method
 (const std::vector<T>& x_0, const std::vector<T>& b, double accuracy) const {
 
-    std::ofstream out;
-    out.open("/home/vljke/Documents/Clion projects/SLAE_4term/tests/Tasks/Test_2/Task2/CG.txt");
-
     // Vector x_i
     std::vector<T> x = x_0;
     // Residual
@@ -616,7 +633,6 @@ std::pair<std::vector<T>, std::pair<size_t, std::vector<double>>> CSR_matrix_spa
                 // Finding alpha_i and x_(i+1) via d_i and r_i
                 alpha = r * r / (d * Ad);
                 x = x - alpha * d;
-                out << d[0] << " " << d[x_0.size() - 1] << std::endl;
                 // Finding beta_(i+1) via r_i and r_(i+1)
                 beta = 1 / (r * r);
                 // Calculating r_(i+1)
@@ -634,5 +650,67 @@ std::pair<std::vector<T>, std::pair<size_t, std::vector<double>>> CSR_matrix_spa
     }
     return std::make_pair(x, std::make_pair(count, nev));
 }
+
+// GMRES(n) method
+template<typename T>
+std::pair<std::vector<T>, std::pair<size_t, std::vector<double>>> CSR_matrix_space::CSR_matrix<T>::GMRESn_method
+(const std::vector<T> &x_0, const std::vector<T> &b, size_t n, double accuracy) const {
+    std::vector<T> x = x_0;
+    // Vector to keep basis vectors
+    std::vector<std::vector<T>> v(n+1, std::vector<T>(this->M));
+    // Hessenberg matrix
+    Dense_matrix<T> H{n+1, n};
+    // Vector to keep sinA && cosA
+    std::vector<std::pair<double, double>> SinCos(n);
+    // Initial residual
+    std::vector<T> r_0 = (*this) * x_0 - b;
+    std::vector<double> nev{std::sqrt(r_0 * r_0)};
+    // Restart if needed
+    while (nev[nev.size() - 1] > accuracy) {
+        // Right side vector
+        std::vector<T> e(n+1);
+        // Residual vector
+        std::vector<T> r = (*this) * x - b;
+        e[0] = std::sqrt(r * r);
+        // First basis vector
+        v[0] = r / e[0];
+        // Make n iterations
+        for (int i = 0; i < n; ++i) {
+            // Finding next basis vector
+            v[i+1] = make_Arnoldi_iteration(v, H, i);
+            // Making previous rotations
+            for (int k = 0; k < i; ++k) {
+                make_GMRES_rotation(H, SinCos, k, i);
+            }
+            // Making current iteration rotation
+            double temp = std::sqrt(H(i + 1, i) * H(i + 1, i) + H(i, i) * H(i, i));
+            SinCos[i].first = H(i + 1, i) / temp;
+            SinCos[i].second = H(i, i) / temp;
+            H(i, i) = SinCos[i].second * H(i, i) + SinCos[i].first * H(i + 1, i);
+            H(i + 1, i) = 0;
+            // Rotating right side vector
+            temp = e[i];
+            e[i] = SinCos[i].second * e[i] + SinCos[i].first * e[i + 1];
+            e[i + 1] = -SinCos[i].first * temp + SinCos[i].second * e[i + 1];
+            // Collecting residual on each iteration
+            nev.push_back(std::abs(e[i + 1]));
+        }
+        // Vector to keep coordinates in Krylov's space
+        std::vector<T> y(n);
+        // Reverse Gauss technique
+        for (int i = n - 1; i >= 0; --i) {
+            // Finding y_i
+            y[i] = e[i];
+            for (int j = n - 1; j > i; --j) {
+                y[i] -= H(i, j) * y[j];
+            }
+            y[i] /= H(i, i);
+            // Finding solution
+            x = x - y[i] * v[i];
+        }
+    }
+    return std::make_pair(x, std::make_pair(nev.size() - 1, nev));
+}
+
 
 #endif //SLAE_4TERM_CSR_MATRIX_H

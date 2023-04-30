@@ -396,3 +396,96 @@ TEST(CSR_matrix_tests, CG_method) {
     std::cout << "Steepest descent method: " << resDescent.second.first << " iterations made" << std::endl;
     std::cout << "Conjugate gradient method: " << resCG.second.first << " iterations made" << std::endl;
 }
+
+// CSR matrix GMRES(n) method test 1
+TEST(CSR_matrix_tests, GMRES_method_1) {
+    // Symmetrical m > 0 matrix
+    CSR_matrix<double> m {3, 3, {{0, 0, 12}, {0, 1, 17}, {0, 2, 3}, {1, 0, 17}, {1, 1, 15825}, {1, 2, 28},
+                                 {2, 0, 3}, {2, 1, 28}, {2, 2, 238}}};
+    // Initial approximation
+    std::vector<double> x0(3, 1);
+    // b vector
+    std::vector<double> b {1, 2, 3};
+    // Precise solution
+    std::vector<double> r {0.0804084117, 0.0000194982, 0.0115891967};
+    double accuracy = 1e-12;
+    // Result w/ GMRES(n)
+    size_t n = 2;
+    auto GMres = m.GMRESn_method(x0, b, n, accuracy);
+    // Result w/ CG method
+    auto resCG = m.CG_method(x0, b, accuracy);
+    // Testing results
+    for (int i = 0; i < r.size(); ++i) {
+        ASSERT_NEAR(GMres.first[i], r[i], 1e-10);
+        ASSERT_NEAR(resCG.first[i], r[i], 1e-10);
+    }
+    // Number of iterations made
+    std::cout << "GMRES(n) method: " << GMres.second.first << " iterations made" << std::endl;
+    std::cout << "Conjugate gradient method: " << resCG.second.first << " iterations made" << std::endl;
+}
+
+// CSR matrix GMRES(n) method test 2
+TEST(CSR_matrix_tests, GMRES_method_2) {
+    std::string filename("/home/vljke/Documents/Clion projects/SLAE_4term/tests/CSR_tests/CSR_matrix_GMRES(n)_method_test.txt");
+    std::string temp, s;
+    std::ifstream file(filename);
+    if (file.is_open()) {
+        // Getting matrix dimensions
+        std::vector<size_t> MN(2);
+        getline(file, temp);
+        std::stringstream ssi(temp);
+        for (int i = 0; i < 2; ++i) {
+            ssi >> s;
+            MN[i] = std::stoi(s);
+        }
+        // Getting number of non-zero elements
+        int N;
+        getline(file, temp);
+        std::stringstream ssN(temp);
+        ssN >> s;
+        N = std::stoi(s);
+        // Getting DOK cells from file
+        std::vector<DOK_cell_space::cell<double>> cells(N);
+        std::vector<double> i_j_val(3);
+        for (int i = 0; i < N; ++i) {
+            getline(file, temp);
+            std::stringstream ssj(temp);
+            for (int j = 0; j < 3; ++j) {
+                ssj >> s;
+                i_j_val[j] = std::stod(s);
+            }
+            cells[i].i = i_j_val[0];
+            cells[i].j = i_j_val[1];
+            cells[i].value = i_j_val[2];
+        }
+        // Creating CSR matrix
+        CSR_matrix<double> m {MN[0], MN[1], cells};
+        // Getting right side vector from file
+        std::vector<double> b(MN[0]);
+        getline(file, temp);
+        std::stringstream ssv(temp);
+        for (int i = 0; i < MN[0]; ++i) {
+            ssv >> s;
+            b[i] = std::stod(s);
+        }
+        // Getting solution vector from file
+        std::vector<double> r(MN[0]);
+        getline(file, temp);
+        std::stringstream ssr(temp);
+        for (int i = 0; i < MN[0]; ++i) {
+            ssr >> s;
+            r[i] = std::stod(s);
+        }
+        // Checking GMRES(n) method
+        size_t n = 20;
+        double accuracy = 1e-12;
+        std::vector<double> x_0(m.getOrder().first, 1);
+        auto res = m.GMRESn_method(x_0, b, n, accuracy);
+        for (int i = 0; i < MN[0]; ++i)
+            ASSERT_NEAR(res.first[i], r[i], 1e-10)
+            << "!!! TEST FAILED ON COORDINATE NUMBER " << i << " !!!" << std::endl;
+        // Number of iterations made
+        std::cout << "GMRES(n) method: " << res.second.first << " iterations made" << std::endl;
+    }
+    file.close();
+}

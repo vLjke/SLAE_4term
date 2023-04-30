@@ -17,14 +17,15 @@ public:
     // Constructors
     Dense_matrix() = default;
     Dense_matrix(const std::vector<std::vector<T>>& matrix);
+    Dense_matrix(size_t M, size_t N); // MxN matrix w/ zeros constructor
     Dense_matrix(const std::vector<T>& n); // Projection constructor
     // Operators
     const T& operator()(size_t i, size_t j) const;
     T& operator()(size_t i, size_t j);
-    template<typename Q>
-    friend std::ostream& operator<<(std::ostream& os, const Dense_matrix<Q>& m);
     std::vector<T> operator*(const std::vector<T>& vec) const;
     std::pair<size_t, size_t> getOrder() const;
+    template<typename Q>
+    friend std::ostream& operator<<(std::ostream& os, const Dense_matrix<Q>& m);
     // QR decomposition
     std::pair<Dense_matrix<T>, Dense_matrix<T>> QR_decomp_HH() const;
     // Descructor
@@ -36,6 +37,7 @@ public:
 template<typename T>
 Dense_matrix<T>::Dense_matrix(const std::vector<std::vector<T>>& matrix): M(matrix.size()), N(matrix[0].size()),
     data(std::ranges::join_view(matrix).begin(), std::ranges::join_view(matrix).end()) {}
+
 template<typename T>
 Dense_matrix<T>::Dense_matrix(const std::vector<T>& n) {
     this->M = n.size();
@@ -50,6 +52,10 @@ Dense_matrix<T>::Dense_matrix(const std::vector<T>& n) {
             this->data[i * this->N + j] = e[i];
     }
 }
+
+template<typename T>
+Dense_matrix<T>::Dense_matrix(size_t M, size_t N): M(M), N(N), data(std::vector<T>(M * N)) {}
+
 // Dense matrix operators
 template<typename T>
 const T& Dense_matrix<T>::operator()(size_t i, size_t j) const {
@@ -84,6 +90,7 @@ template<typename T>
 std::pair<size_t, size_t> Dense_matrix<T>::getOrder() const {
     return std::make_pair(this->M, this->N);
 }
+
 // Dense matrix QR decomposition
 template<typename T>
 std::pair<Dense_matrix<T>, Dense_matrix<T>> Dense_matrix<T>::QR_decomp_HH() const {
