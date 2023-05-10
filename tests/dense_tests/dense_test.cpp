@@ -14,9 +14,9 @@ TEST(Dense_matrix_tests, matrix_mult_vector_1) {
         // Getting matrix dimensions
         std::vector<size_t> MN(2);
         getline(file, temp);
-        std::stringstream ssi(temp);
+        std::stringstream ss(temp);
         for (int i = 0; i < 2; ++i) {
-            ssi >> s;
+            ss >> s;
             MN[i] = std::stoi(s);
         }
         // Getting matrix from file
@@ -24,9 +24,9 @@ TEST(Dense_matrix_tests, matrix_mult_vector_1) {
         for (int i = 0; i < MN[0]; ++i) {
             construct_matrix[i].resize(MN[1]);
             getline(file, temp);
-            std::stringstream ssm(temp);
+            ss = std::stringstream(temp);
             for (int j = 0; j < MN[1]; ++j) {
-                ssm >> s;
+                ss >> s;
                 construct_matrix[i][j] = std::stod(s);
             }
         }
@@ -35,17 +35,17 @@ TEST(Dense_matrix_tests, matrix_mult_vector_1) {
         // Getting vector to multiply from file
         std::vector<double> v(MN[1]);
         getline(file, temp);
-        std::stringstream ssv(temp);
+        ss = std::stringstream(temp);
         for (int i = 0; i < MN[1]; ++i) {
-            ssv >> s;
+            ss >> s;
             v[i] = std::stod(s);
         }
         // Getting multiply result vector from file
         std::vector<double> r(MN[0]);
         getline(file, temp);
-        std::stringstream ssr(temp);
+        ss = std::stringstream(temp);
         for (int i = 0; i < MN[1]; ++i) {
-            ssr >> s;
+            ss >> s;
             r[i] = std::stod(s);
         }
         // Checking multiply operator
@@ -66,9 +66,9 @@ TEST(Dense_matrix_tests, matrix_mult_vector_2) {
         // Getting matrix dimensions
         std::vector<size_t> MN(2);
         getline(file, temp);
-        std::stringstream ssi(temp);
+        std::stringstream ss = std::stringstream(temp);
         for (int i = 0; i < 2; ++i) {
-            ssi >> s;
+            ss >> s;
             MN[i] = std::stoi(s);
         }
         // Getting matrix from file
@@ -76,9 +76,9 @@ TEST(Dense_matrix_tests, matrix_mult_vector_2) {
         for (int i = 0; i < MN[0]; ++i) {
             construct_matrix[i].resize(MN[1]);
             getline(file, temp);
-            std::stringstream ssm(temp);
+            ss = std::stringstream(temp);
             for (int j = 0; j < MN[1]; ++j) {
-                ssm >> s;
+                ss >> s;
                 construct_matrix[i][j] = std::stod(s);
             }
         }
@@ -95,9 +95,9 @@ TEST(Dense_matrix_tests, matrix_mult_vector_2) {
         // Getting multiply result vector from file
         std::vector<double> r(MN[0]);
         getline(file, temp);
-        std::stringstream ssr(temp);
+        ss = std::stringstream(temp);
         for (int i = 0; i < MN[0]; ++i) {
-            ssr >> s;
+            ss >> s;
             r[i] = std::stod(s);
         }
         // Checking multiply operator
@@ -118,9 +118,9 @@ TEST(Dense_matrix_tests, matrix_get_elements) {
         // Getting matrix dimensions
         std::vector<size_t> MN(2);
         getline(file, temp);
-        std::stringstream ssi(temp);
+        std::stringstream ss(temp);
         for (int i = 0; i < 2; ++i) {
-            ssi >> s;
+            ss >> s;
             MN[i] = std::stoi(s);
         }
         // Getting matrix from file
@@ -128,9 +128,9 @@ TEST(Dense_matrix_tests, matrix_get_elements) {
         for (int i = 0; i < MN[0]; ++i) {
             construct_matrix[i].resize(MN[1]);
             getline(file, temp);
-            std::stringstream ssm(temp);
+            ss = std::stringstream(temp);
             for (int j = 0; j < MN[1]; ++j) {
-                ssm >> s;
+                ss >> s;
                 construct_matrix[i][j] = std::stod(s);
             }
         }
@@ -139,15 +139,15 @@ TEST(Dense_matrix_tests, matrix_get_elements) {
         int N;
         std::vector<double> i_j_val(3);
         getline(file, temp);
-        std::stringstream ssn(temp);
-        ssn >> s;
+        ss = std::stringstream(temp);
+        ss >> s;
         N = std::stoi(s);
         // Getting indexes and values from file
         for (int i = 0; i < N; ++i) {
             getline(file, temp);
-            std::stringstream ssj(temp);
+            ss = std::stringstream(temp);
             for (int j = 0; j < 3; ++j) {
-                ssj >> s;
+                ss >> s;
                 i_j_val[j] = std::stod(s);
             }
             ASSERT_NEAR(i_j_val[2], m(i_j_val[0], i_j_val[1]), 1e-10)
@@ -166,9 +166,9 @@ TEST(Dense_matrix_tests, QR_decomp_HH_1) {
         // Getting initial matrix dimensions
         std::vector<size_t> MN(2);
         getline(file, temp);
-        std::stringstream ssi(temp);
+        std::stringstream ss(temp);
         for (int i = 0; i < 2; ++i) {
-            ssi >> s;
+            ss >> s;
             MN[i] = std::stoi(s);
         }
         // Getting initial matrix from file
@@ -176,9 +176,9 @@ TEST(Dense_matrix_tests, QR_decomp_HH_1) {
         for (int i = 0; i < MN[0]; ++i) {
             construct_matrix[i].resize(MN[1]);
             getline(file, temp);
-            std::stringstream ssm(temp);
+            ss = std::stringstream(temp);
             for (int j = 0; j < MN[1]; ++j) {
-                ssm >> s;
+                ss >> s;
                 construct_matrix[i][j] = std::stod(s);
             }
         }
@@ -186,9 +186,9 @@ TEST(Dense_matrix_tests, QR_decomp_HH_1) {
 
         // Getting Q matrix dimensions
         getline(file, temp);
-        std::stringstream ssq(temp);
+        ss = std::stringstream(temp);
         for (int i = 0; i < 2; ++i) {
-            ssq >> s;
+            ss >> s;
             MN[i] = std::stoi(s);
         }
         // Getting Q matrix from file
@@ -196,9 +196,9 @@ TEST(Dense_matrix_tests, QR_decomp_HH_1) {
         for (int i = 0; i < MN[0]; ++i) {
             construct_matrix[i].resize(MN[1]);
             getline(file, temp);
-            std::stringstream ssm(temp);
+            ss = std::stringstream(temp);
             for (int j = 0; j < MN[1]; ++j) {
-                ssm >> s;
+                ss >> s;
                 construct_matrix[i][j] = std::stod(s);
             }
         }
@@ -206,9 +206,9 @@ TEST(Dense_matrix_tests, QR_decomp_HH_1) {
 
         // Getting R matrix dimensions
         getline(file, temp);
-        std::stringstream ssr(temp);
+        ss = std::stringstream(temp);
         for (int i = 0; i < 2; ++i) {
-            ssr >> s;
+            ss >> s;
             MN[i] = std::stoi(s);
         }
         // Getting R matrix from file
@@ -216,9 +216,9 @@ TEST(Dense_matrix_tests, QR_decomp_HH_1) {
         for (int i = 0; i < MN[0]; ++i) {
             construct_matrix[i].resize(MN[1]);
             getline(file, temp);
-            std::stringstream ssm(temp);
+            ss = std::stringstream(temp);
             for (int j = 0; j < MN[1]; ++j) {
-                ssm >> s;
+                ss >> s;
                 construct_matrix[i][j] = std::stod(s);
             }
         }
@@ -251,9 +251,9 @@ TEST(Dense_matrix_tests, QR_decomp_HH_2) {
         // Getting initial matrix dimensions
         std::vector<size_t> MN(2);
         getline(file, temp);
-        std::stringstream ssi(temp);
+        std::stringstream ss(temp);
         for (int i = 0; i < 2; ++i) {
-            ssi >> s;
+            ss >> s;
             MN[i] = std::stoi(s);
         }
         // Getting initial matrix from file
@@ -261,9 +261,9 @@ TEST(Dense_matrix_tests, QR_decomp_HH_2) {
         for (int i = 0; i < MN[0]; ++i) {
             construct_matrix[i].resize(MN[1]);
             getline(file, temp);
-            std::stringstream ssm(temp);
+            ss = std::stringstream(temp);
             for (int j = 0; j < MN[1]; ++j) {
-                ssm >> s;
+                ss >> s;
                 construct_matrix[i][j] = std::stod(s);
             }
         }
@@ -271,9 +271,9 @@ TEST(Dense_matrix_tests, QR_decomp_HH_2) {
 
         // Getting Q matrix dimensions
         getline(file, temp);
-        std::stringstream ssq(temp);
+        ss = std::stringstream(temp);
         for (int i = 0; i < 2; ++i) {
-            ssq >> s;
+            ss >> s;
             MN[i] = std::stoi(s);
         }
         // Getting Q matrix from file
@@ -281,9 +281,9 @@ TEST(Dense_matrix_tests, QR_decomp_HH_2) {
         for (int i = 0; i < MN[0]; ++i) {
             construct_matrix[i].resize(MN[1]);
             getline(file, temp);
-            std::stringstream ssm(temp);
+            ss = std::stringstream(temp);
             for (int j = 0; j < MN[1]; ++j) {
-                ssm >> s;
+                ss >> s;
                 construct_matrix[i][j] = std::stod(s);
             }
         }
@@ -291,9 +291,9 @@ TEST(Dense_matrix_tests, QR_decomp_HH_2) {
 
         // Getting R matrix dimensions
         getline(file, temp);
-        std::stringstream ssr(temp);
+        ss = std::stringstream(temp);
         for (int i = 0; i < 2; ++i) {
-            ssr >> s;
+            ss >> s;
             MN[i] = std::stoi(s);
         }
         // Getting R matrix from file
@@ -301,9 +301,9 @@ TEST(Dense_matrix_tests, QR_decomp_HH_2) {
         for (int i = 0; i < MN[0]; ++i) {
             construct_matrix[i].resize(MN[1]);
             getline(file, temp);
-            std::stringstream ssm(temp);
+            ss = std::stringstream(temp);
             for (int j = 0; j < MN[1]; ++j) {
-                ssm >> s;
+                ss >> s;
                 construct_matrix[i][j] = std::stod(s);
             }
         }

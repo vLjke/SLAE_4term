@@ -122,6 +122,13 @@ namespace CSR_matrix_space
         T operator()(size_t i, size_t j);
         std::vector<T> operator*(const std::vector<T>& vec) const;
         std::pair<size_t, size_t> getOrder() const;
+        // Getters
+        const std::vector<T>& getValues() const {return this->values;}
+        const std::vector<size_t>& getCols() const {return this->cols;}
+        const std::vector<size_t>& getRows() const {return this->rows;}
+
+        // Transposed matrix
+        CSR_matrix<T> Transposed() const;
 
         // SLAE Solvers
         // Jacobi method
@@ -156,6 +163,9 @@ namespace CSR_matrix_space
         (const std::vector<T>& x_0, const std::vector<T>& b, double accuracy) const;
         // Conjugate gradient method
         std::pair<std::vector<T>, std::pair<size_t, std::vector<double>>> CG_method
+        (const std::vector<T>& x_0, const std::vector<T>& b, double accuracy) const;
+        // BiCG method
+        std::pair<std::vector<T>, std::pair<size_t, std::vector<double>>> BiCG_method
         (const std::vector<T>& x_0, const std::vector<T>& b, double accuracy) const;
         // CMRES(n) method
         std::pair<std::vector<T>, std::pair<size_t, std::vector<double>>> GMRESn_method
@@ -249,6 +259,18 @@ std::vector<T> CSR_matrix_space::CSR_matrix<T>::operator*(const std::vector<T>& 
 template<typename T>
 std::pair<size_t, size_t> CSR_matrix_space::CSR_matrix<T>::getOrder() const {
     return std::make_pair(this->M, this->N);
+}
+
+template<typename T>
+CSR_matrix_space::CSR_matrix<T> CSR_matrix_space::CSR_matrix<T>::Transposed() const {
+    // Vector to construct transposed matrix
+    std::vector<DOK_cell_space::cell<T>> cells;
+    cells.reserve(this->values.size());
+    //
+    for (int k = 0; k < this->M; ++k)
+        for (int s = this->rows[k]; s < this->rows[k + 1]; ++s)
+            cells.push_back({this->cols[s], static_cast<size_t>(k), this->values[s]});
+    return CSR_matrix<T>{this->N, this->M, cells};
 }
 
 // CSR matrix SLAE solvers
@@ -609,7 +631,6 @@ std::pair<std::vector<T>, std::pair<size_t, std::vector<double>>> CSR_matrix_spa
 template<typename T>
 std::pair<std::vector<T>, std::pair<size_t, std::vector<double>>> CSR_matrix_space::CSR_matrix<T>::CG_method
 (const std::vector<T>& x_0, const std::vector<T>& b, double accuracy) const {
-
     // Vector x_i
     std::vector<T> x = x_0;
     // Residual
@@ -646,6 +667,60 @@ std::pair<std::vector<T>, std::pair<size_t, std::vector<double>>> CSR_matrix_spa
             }
             else
                 return std::make_pair(x, std::make_pair(count, nev));
+        }
+    }
+    return std::make_pair(x, std::make_pair(count, nev));
+}
+
+// BiCG method
+template<typename T>
+std::pair<std::vector<T>, std::pair<size_t, std::vector<double>>> CSR_matrix_space::CSR_matrix<T>::BiCG_method
+(const std::vector<T>& x_0, const std::vector<T>& b, double accuracy) const {
+    // Transposed matrix
+    CSR_matrix<T> A_T = this->Transposed();
+    // Vector x_i
+    std::vector<T> x = x_0;
+    // Initial residual
+    std::vector<T> r_0 = (*this) * x - b;
+    // Total number of iterations
+    size_t count = 0;
+    // Vector to collect residual on each iteration
+    std::vector<double> nev{std::sqrt(r_0 * r_0)};
+    // Restart if needed
+    while (nev[count] > accuracy) {
+        // r and p vectors
+        std::vector<T> r = (*this) * x - b;
+        std::vector<T> r_wave = r, p = r, p_wave = r;
+        // Temporary variables
+        T q, t, rr_current, rr_prev;
+        std::vector<T> Ap;
+        // n iterations cycle
+        for (int i = 0; i < this->M; ++i) {
+            // Updating rr_(i-1)
+            rr_current = r * r_wave;
+            // Restart if r*r_current == 0
+            if (rr_current == 0) break;
+            // Except for the first iteration
+            if (i != 0) {
+                t = rr_current / rr_prev;
+                p = r + t * p;
+                p_wave = r_wave + t * p_wave;
+            }
+            // On the first iteration
+            else
+                rr_prev = rr_current;
+            // Finding temporary variables
+            Ap = (*this) * p;
+            q = rr_current / (r_wave * Ap);
+            // Finding x_i and r_i
+            x = x - q * p;
+            r = r - q * Ap;
+            r_wave = r_wave - q * (A_T * p_wave);
+            // Updating rr_(i-2)
+            rr_prev = rr_current;
+            // Collecting residual and increasing counter
+            nev.push_back(std::sqrt(r * r));
+            count++;
         }
     }
     return std::make_pair(x, std::make_pair(count, nev));

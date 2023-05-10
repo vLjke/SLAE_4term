@@ -18,17 +18,17 @@ TEST(CSR_matrix_tests, DOK_cell_sort) {
         // Getting number of elements to get from file
         int N;
         getline(file, temp);
-        std::stringstream ssn(temp);
-        ssn >> s;
+        std::stringstream ss(temp);
+        ss >> s;
         N = std::stoi(s);
         // Getting indexes and values from file
         std::vector<DOK_cell_space::cell<double>> cells(N);
         std::vector<double> i_j_val(3);
         for (int i = 0; i < N; ++i) {
             getline(file, temp);
-            std::stringstream ssj(temp);
+            ss = std::stringstream(temp);
             for (int j = 0; j < 3; ++j) {
-                ssj >> s;
+                ss >> s;
                 i_j_val[j] = std::stod(s);
             }
             cells[i].i = i_j_val[0];
@@ -47,7 +47,7 @@ TEST(CSR_matrix_tests, DOK_cell_sort) {
     file.close();
 }
 
-// CSR matrix 20x20 multiply vector test
+// CSR matrix 20x20 multiply vector test 1
 TEST(CSR_matrix_tests, matrix_mult_vector_1) {
     std::string filename("/home/vljke/Documents/Clion projects/SLAE_4term/tests/CSR_tests/CSR_matrix_mult_vector_1.txt");
     std::string temp, s;
@@ -56,25 +56,25 @@ TEST(CSR_matrix_tests, matrix_mult_vector_1) {
         // Getting matrix dimensions
         std::vector<size_t> MN(2);
         getline(file, temp);
-        std::stringstream ssi(temp);
+        std::stringstream ss(temp);
         for (int i = 0; i < 2; ++i) {
-            ssi >> s;
+            ss >> s;
             MN[i] = std::stoi(s);
         }
         // Getting number of non-zero elements
         int N;
         getline(file, temp);
-        std::stringstream ssN(temp);
-        ssN >> s;
+        ss = std::stringstream(temp);
+        ss >> s;
         N = std::stoi(s);
         // Getting DOK cells from file
         std::vector<DOK_cell_space::cell<double>> cells(N);
         std::vector<double> i_j_val(3);
         for (int i = 0; i < N; ++i) {
             getline(file, temp);
-            std::stringstream ssj(temp);
+            ss = std::stringstream(temp);
             for (int j = 0; j < 3; ++j) {
-                ssj >> s;
+                ss >> s;
                 i_j_val[j] = std::stod(s);
             }
             cells[i].i = i_j_val[0];
@@ -86,17 +86,17 @@ TEST(CSR_matrix_tests, matrix_mult_vector_1) {
         // Getting vector to multiply from file
         std::vector<double> v(MN[1]);
         getline(file, temp);
-        std::stringstream ssv(temp);
+        ss = std::stringstream(temp);
         for (int i = 0; i < MN[1]; ++i) {
-            ssv >> s;
+            ss >> s;
             v[i] = std::stod(s);
         }
         // Getting multiply result vector from file
         std::vector<double> r(MN[0]);
         getline(file, temp);
-        std::stringstream ssr(temp);
+        ss = std::stringstream(temp);
         for (int i = 0; i < MN[1]; ++i) {
-            ssr >> s;
+            ss >> s;
             r[i] = std::stod(s);
         }
         // Checking multiply operator
@@ -108,7 +108,7 @@ TEST(CSR_matrix_tests, matrix_mult_vector_1) {
     file.close();
 }
 
-// CSR matrix 100x200 multiply vector test
+// CSR matrix 100x200 multiply vector test 2
 TEST(CSR_matrix_tests, matrix_mult_vector_2) {
     std::string filename("/home/vljke/Documents/Clion projects/SLAE_4term/tests/CSR_tests/CSR_matrix_mult_vector_2.txt");
     std::string temp, s;
@@ -117,25 +117,25 @@ TEST(CSR_matrix_tests, matrix_mult_vector_2) {
         // Getting matrix dimensions
         std::vector<size_t> MN(2);
         getline(file, temp);
-        std::stringstream ssi(temp);
+        std::stringstream ss(temp);
         for (int i = 0; i < 2; ++i) {
-            ssi >> s;
+            ss >> s;
             MN[i] = std::stoi(s);
         }
         // Getting number of non-zero elements
         int N;
         getline(file, temp);
-        std::stringstream ssN(temp);
-        ssN >> s;
+        ss = std::stringstream(temp);
+        ss >> s;
         N = std::stoi(s);
         // Getting DOK cells from file
         std::vector<DOK_cell_space::cell<double>> cells(N);
         std::vector<double> i_j_val(3);
         for (int i = 0; i < N; ++i) {
             getline(file, temp);
-            std::stringstream ssj(temp);
+            ss = std::stringstream(temp);
             for (int j = 0; j < 3; ++j) {
-                ssj >> s;
+                ss >> s;
                 i_j_val[j] = std::stod(s);
             }
             cells[i].i = i_j_val[0];
@@ -147,17 +147,17 @@ TEST(CSR_matrix_tests, matrix_mult_vector_2) {
         // Getting vector to multiply from file
         std::vector<double> v(MN[1]);
         getline(file, temp);
-        std::stringstream ssv(temp);
+        ss = std::stringstream(temp);
         for (int i = 0; i < MN[1]; ++i) {
-            ssv >> s;
+            ss >> s;
             v[i] = std::stod(s);
         }
         // Getting multiply result vector from file
         std::vector<double> r(MN[0]);
         getline(file, temp);
-        std::stringstream ssr(temp);
+        ss = std::stringstream(temp);
         for (int i = 0; i < MN[0]; ++i) {
-            ssr >> s;
+            ss >> s;
             r[i] = std::stod(s);
         }
         // Checking multiply operator
@@ -178,25 +178,25 @@ TEST(CSR_matrix_tests, matrix_get_element) {
         // Getting matrix dimensions
         std::vector<size_t> MN(2);
         getline(file, temp);
-        std::stringstream ssi(temp);
+        std::stringstream ss(temp);
         for (int i = 0; i < 2; ++i) {
-            ssi >> s;
+            ss >> s;
             MN[i] = std::stoi(s);
         }
         // Getting number of non-zero elements
         int N;
         getline(file, temp);
-        std::stringstream ssN(temp);
-        ssN >> s;
+        ss = std::stringstream(temp);
+        ss >> s;
         N = std::stoi(s);
         // Getting DOK cells from file
         std::vector<DOK_cell_space::cell<double>> cells(N);
         std::vector<double> i_j_val(3);
         for (int i = 0; i < N; ++i) {
             getline(file, temp);
-            std::stringstream ssi(temp);
+            ss = std::stringstream(temp);
             for (int j = 0; j < 3; ++j) {
-                ssi >> s;
+                ss >> s;
                 i_j_val[j] = std::stod(s);
             }
             cells[i].i = i_j_val[0];
@@ -208,15 +208,15 @@ TEST(CSR_matrix_tests, matrix_get_element) {
         // Getting number of elements to get from file
         int n;
         getline(file, temp);
-        std::stringstream ssn(temp);
-        ssn >> s;
+        ss = std::stringstream(temp);
+        ss >> s;
         n = std::stoi(s);
         // Getting indexes and values from file
         for (int i = 0; i < n; ++i) {
             getline(file, temp);
-            std::stringstream ssj(temp);
+            ss = std::stringstream(temp);
             for (int j = 0; j < 3; ++j) {
-                ssj >> s;
+                ss >> s;
                 i_j_val[j] = std::stod(s);
             }
             ASSERT_NEAR(i_j_val[2], m(i_j_val[0], i_j_val[1]), 1e-10)
@@ -226,7 +226,7 @@ TEST(CSR_matrix_tests, matrix_get_element) {
     file.close();
 }
 
-// CSR matrix simple iteration method w/ Chebyshev acceleration test
+// CSR matrix 3x3 simple iteration method w/ Chebyshev acceleration test
 TEST(CSR_matrix_tests, SIM_Chebyshev_acceleration) {
     // Symmetrical m > 0 matrix
     CSR_matrix<double> m {3, 3, {{0, 0, 12}, {0, 1, 17}, {0, 2, 3}, {1, 0, 17}, {1, 1, 15825}, {1, 2, 28},
@@ -256,7 +256,7 @@ TEST(CSR_matrix_tests, SIM_Chebyshev_acceleration) {
     std::cout << "Common SIM: " << res.second.first << " iterations made" << std::endl;
 }
 
-// CSR matrix SOR method test
+// CSR matrix 3x3 SOR method test
 TEST(CSR_matrix_tests, SOR_method) {
     // Symmetrical m > 0 matrix
     CSR_matrix<double> m {3, 3, {{0, 0, 12}, {0, 1, 17}, {0, 2, 3}, {1, 0, 17}, {1, 1, 15825}, {1, 2, 28},
@@ -286,7 +286,7 @@ TEST(CSR_matrix_tests, SOR_method) {
     std::cout << "SOR method: " << res.second.first << " iterations made" << std::endl;
 }
 
-// CSR matrix SSOR method test
+// CSR matrix 3x3 SSOR method test
 TEST(CSR_matrix_tests, SSOR_method) {
     // Symmetrical m > 0 matrix
     CSR_matrix<double> m {3, 3, {{0, 0, 12}, {0, 1, 17}, {0, 2, 3}, {1, 0, 17}, {1, 1, 15825}, {1, 2, 28},
@@ -316,7 +316,7 @@ TEST(CSR_matrix_tests, SSOR_method) {
     std::cout << "SSOR method: " << res.second.first << " iterations made" << std::endl;
 }
 
-// CSR matrix Steepest descent method test
+// CSR matrix 3x3 Steepest descent method test
 TEST(CSR_matrix_tests, Steepest_descent_method) {
     // Symmetrical m > 0 matrix
     CSR_matrix<double> m {3, 3, {{0, 0, 12}, {0, 1, 17}, {0, 2, 3}, {1, 0, 17}, {1, 1, 15825}, {1, 2, 28},
@@ -345,7 +345,7 @@ TEST(CSR_matrix_tests, Steepest_descent_method) {
     std::cout << "Steepest descent method: " << res.second.first << " iterations made" << std::endl;
 }
 
-// CSR matrix Heavy ball method test
+// CSR matrix 3x3 Heavy ball method test
 TEST(CSR_matrix_tests, Heavy_ball_method) {
     // Symmetrical m > 0 matrix
     CSR_matrix<double> m {3, 3, {{0, 0, 12}, {0, 1, 17}, {0, 2, 3}, {1, 0, 17}, {1, 1, 15825}, {1, 2, 28},
@@ -371,7 +371,7 @@ TEST(CSR_matrix_tests, Heavy_ball_method) {
     std::cout << "Heavy ball method: " << resHeavy.second.first << " iterations made" << std::endl;
 }
 
-// CSR matrix Conjugate gradient method test
+// CSR matrix 3x3 Conjugate gradient method test
 TEST(CSR_matrix_tests, CG_method) {
     // Symmetrical m > 0 matrix
     CSR_matrix<double> m {3, 3, {{0, 0, 12}, {0, 1, 17}, {0, 2, 3}, {1, 0, 17}, {1, 1, 15825}, {1, 2, 28},
@@ -397,7 +397,7 @@ TEST(CSR_matrix_tests, CG_method) {
     std::cout << "Conjugate gradient method: " << resCG.second.first << " iterations made" << std::endl;
 }
 
-// CSR matrix GMRES(n) method test 1
+// CSR matrix 3x3 GMRES(n) method test 1
 TEST(CSR_matrix_tests, GMRES_method_1) {
     // Symmetrical m > 0 matrix
     CSR_matrix<double> m {3, 3, {{0, 0, 12}, {0, 1, 17}, {0, 2, 3}, {1, 0, 17}, {1, 1, 15825}, {1, 2, 28},
@@ -424,7 +424,7 @@ TEST(CSR_matrix_tests, GMRES_method_1) {
     std::cout << "Conjugate gradient method: " << resCG.second.first << " iterations made" << std::endl;
 }
 
-// CSR matrix GMRES(n) method test 2
+// CSR matrix 20x20 GMRES(n) method test 2
 TEST(CSR_matrix_tests, GMRES_method_2) {
     std::string filename("/home/vljke/Documents/Clion projects/SLAE_4term/tests/CSR_tests/CSR_matrix_GMRES(n)_method_test.txt");
     std::string temp, s;
@@ -433,25 +433,25 @@ TEST(CSR_matrix_tests, GMRES_method_2) {
         // Getting matrix dimensions
         std::vector<size_t> MN(2);
         getline(file, temp);
-        std::stringstream ssi(temp);
+        std::stringstream ss(temp);
         for (int i = 0; i < 2; ++i) {
-            ssi >> s;
+            ss >> s;
             MN[i] = std::stoi(s);
         }
         // Getting number of non-zero elements
         int N;
         getline(file, temp);
-        std::stringstream ssN(temp);
-        ssN >> s;
+        ss = std::stringstream(temp);
+        ss >> s;
         N = std::stoi(s);
         // Getting DOK cells from file
         std::vector<DOK_cell_space::cell<double>> cells(N);
         std::vector<double> i_j_val(3);
         for (int i = 0; i < N; ++i) {
             getline(file, temp);
-            std::stringstream ssj(temp);
+            ss = std::stringstream(temp);
             for (int j = 0; j < 3; ++j) {
-                ssj >> s;
+                ss >> s;
                 i_j_val[j] = std::stod(s);
             }
             cells[i].i = i_j_val[0];
@@ -463,17 +463,17 @@ TEST(CSR_matrix_tests, GMRES_method_2) {
         // Getting right side vector from file
         std::vector<double> b(MN[0]);
         getline(file, temp);
-        std::stringstream ssv(temp);
+        ss = std::stringstream(temp);
         for (int i = 0; i < MN[0]; ++i) {
-            ssv >> s;
+            ss >> s;
             b[i] = std::stod(s);
         }
         // Getting solution vector from file
         std::vector<double> r(MN[0]);
         getline(file, temp);
-        std::stringstream ssr(temp);
+        ss = std::stringstream(temp);
         for (int i = 0; i < MN[0]; ++i) {
-            ssr >> s;
+            ss >> s;
             r[i] = std::stod(s);
         }
         // Checking GMRES(n) method
@@ -486,6 +486,142 @@ TEST(CSR_matrix_tests, GMRES_method_2) {
             << "!!! TEST FAILED ON COORDINATE NUMBER " << i << " !!!" << std::endl;
         // Number of iterations made
         std::cout << "GMRES(n) method: " << res.second.first << " iterations made" << std::endl;
+    }
+    file.close();
+}
+
+// CSR transposed matrix 50x20 test
+TEST(CSR_matrix_tests, transposed_matrix) {
+    std::string filename("/home/vljke/Documents/Clion projects/SLAE_4term/tests/CSR_tests/CSR_transposed_matrix_test.txt");
+    std::string temp, s;
+    std::ifstream file(filename);
+    if (file.is_open()) {
+        // Getting matrix dimensions
+        std::vector<size_t> MN(2);
+        getline(file, temp);
+        std::stringstream ss(temp);
+        for (int i = 0; i < 2; ++i) {
+            ss >> s;
+            MN[i] = std::stoi(s);
+        }
+        // Getting number of non-zero elements
+        int N;
+        getline(file, temp);
+        ss = std::stringstream(temp);
+        ss >> s;
+        N = std::stoi(s);
+        // Getting DOK cells from file
+        std::vector<DOK_cell_space::cell<double>> cells(N);
+        std::vector<double> i_j_val(3);
+        for (int i = 0; i < N; ++i) {
+            getline(file, temp);
+            ss = std::stringstream(temp);
+            for (int j = 0; j < 3; ++j) {
+                ss >> s;
+                i_j_val[j] = std::stod(s);
+            }
+            cells[i].i = i_j_val[0];
+            cells[i].j = i_j_val[1];
+            cells[i].value = i_j_val[2];
+        }
+        // Creating CSR matrix
+        CSR_matrix<double> m{MN[0], MN[1], cells};
+        // Getting transposed matrix dimensions
+        getline(file, temp);
+        ss = std::stringstream(temp);
+        for (int i = 0; i < 2; ++i) {
+            ss >> s;
+            MN[i] = std::stoi(s);
+        }
+        // Getting number of non-zero elements
+        getline(file, temp);
+        ss = std::stringstream(temp);
+        ss >> s;
+        N = std::stoi(s);
+        // Getting DOK cells from file
+        for (int i = 0; i < N; ++i) {
+            getline(file, temp);
+            ss = std::stringstream(temp);
+            for (int j = 0; j < 3; ++j) {
+                ss >> s;
+                i_j_val[j] = std::stod(s);
+            }
+            cells[i].i = i_j_val[0];
+            cells[i].j = i_j_val[1];
+            cells[i].value = i_j_val[2];
+        }
+        // Creating transposed CSR matrix
+        CSR_matrix<double> m_T{MN[0], MN[1], cells};
+        // Checking result of transposing matrix
+        auto res = m.Transposed();
+        ASSERT_TRUE(res.getOrder().first == m_T.getOrder().first && res.getOrder().second == m_T.getOrder().second);
+        ASSERT_TRUE(res.getRows() == m_T.getRows());
+        ASSERT_TRUE(res.getCols() == m_T.getCols());
+        ASSERT_TRUE(res.getValues() == m_T.getValues());
+    }
+}
+
+// CSR matrix 20x20 BiCG method test 1
+TEST(CSR_matrix_tests, BiCG_method_1) {
+    std::string filename("/home/vljke/Documents/Clion projects/SLAE_4term/tests/CSR_tests/CSR_matrix_BiCG_method_test.txt");
+    std::string temp, s;
+    std::ifstream file(filename);
+    if (file.is_open()) {
+        // Getting matrix dimensions
+        std::vector<size_t> MN(2);
+        getline(file, temp);
+        std::stringstream ss(temp);
+        for (int i = 0; i < 2; ++i) {
+            ss >> s;
+            MN[i] = std::stoi(s);
+        }
+        // Getting number of non-zero elements
+        int N;
+        getline(file, temp);
+        ss = std::stringstream(temp);
+        ss >> s;
+        N = std::stoi(s);
+        // Getting DOK cells from file
+        std::vector<DOK_cell_space::cell<double>> cells(N);
+        std::vector<double> i_j_val(3);
+        for (int i = 0; i < N; ++i) {
+            getline(file, temp);
+            ss = std::stringstream(temp);
+            for (int j = 0; j < 3; ++j) {
+                ss >> s;
+                i_j_val[j] = std::stod(s);
+            }
+            cells[i].i = i_j_val[0];
+            cells[i].j = i_j_val[1];
+            cells[i].value = i_j_val[2];
+        }
+        // Creating CSR matrix
+        CSR_matrix<double> m {MN[0], MN[1], cells};
+        // Getting right side vector from file
+        std::vector<double> b(MN[0]);
+        getline(file, temp);
+        ss = std::stringstream(temp);
+        for (int i = 0; i < MN[0]; ++i) {
+            ss >> s;
+            b[i] = std::stod(s);
+        }
+        // Getting solution vector from file
+        std::vector<double> r(MN[0]);
+        getline(file, temp);
+        ss = std::stringstream(temp);
+        for (int i = 0; i < MN[0]; ++i) {
+            ss >> s;
+            r[i] = std::stod(s);
+        }
+        // Checking BiCG method
+        double accuracy = 1e-12;
+        std::vector<double> x_0(m.getOrder().first, 1);
+        auto res = m.BiCG_method(x_0, b, accuracy);
+        for (int i = 0; i < MN[0]; ++i)
+            ASSERT_NEAR(res.first[i], r[i], 1e-10)
+            << "!!! TEST FAILED ON COORDINATE NUMBER " << i << " !!!" << std::endl;
+        // Number of iterations made
+        std::cout << "BiCG method: " << res.second.first << " iterations made" << std::endl;
     }
     file.close();
 }
